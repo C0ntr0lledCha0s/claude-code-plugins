@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "Meta-agent plugin for building Claude Code agents, skills, slash commands, hooks, and plugins. Provides automated scaffolding, validation, and best practices guidance.",
   "author": {
-    "name": "Claude Agent Builder",
+    "name": "C0ntr0lledCha0s",
     "url": "https://github.com/C0ntr0lledCha0s/claude-code-plugins"
   },
   "repository": "https://github.com/C0ntr0lledCha0s/claude-code-plugins",
+  "homepage": "https://github.com/C0ntr0lledCha0s/claude-code-plugins/tree/main/agent-builder",
   "license": "MIT",
+  "category": "development-tools",
   "keywords": [
     "meta-agent",
     "agent-builder",
