@@ -1,0 +1,70 @@
+{
+  "name": "claude-code-plugins",
+  "owner": {
+    "name": "C0ntr0lledCha0s",
+    "url": "https://github.com/C0ntr0lledCha0s"
+  },
+  "metadata": {
+    "description": "A collection of meta-agents and plugins for Claude Code, including tools for building agents and continuous self-improvement",
+    "version": "2.0.0",
+    "homepage": "https://github.com/C0ntr0lledCha0s/claude-code-plugins",
+    "pluginRoot": "./",
+    "stats": {
+      "totalPlugins": 2,
+      "lastUpdated": "2025-11-11"
+    }
+  },
+  "plugins": [
+    {
+      "name": "agent-builder",
+      "source": "./agent-builder",
+      "description": "Meta-agent plugin for building Claude Code agents, skills, slash commands, hooks, and plugins. Provides automated scaffolding, validation, and best practices guidance.",
+      "version": "1.0.0",
+      "category": "development-tools",
+      "keywords": [
+        "meta-agent",
+        "agent-builder",
+        "skill-builder",
+        "command-builder",
+        "hook-builder",
+        "scaffolding",
+        "automation",
+        "development-tools"
+      ],
+      "author": {
+        "name": "C0ntr0lledCha0s",
+        "url": "https://github.com/C0ntr0lledCha0s/claude-code-plugins"
+      },
+      "repository": "https://github.com/C0ntr0lledCha0s/claude-code-plugins",
+      "license": "MIT",
+      "homepage": "https://github.com/C0ntr0lledCha0s/claude-code-plugins/tree/main/agent-builder"
+    },
+    {
+      "name": "self-improvement",
+      "source": "./self-improvement-plugin",
+      "description": "Self-improvement system for Claude with critic agent, quality analysis skills, automated conversation analysis, and feedback loops. Features automatic pattern tracking, learning reinforcement, and trend detection. Enables continuous improvement through honest self-assessment and iterative refinement.",
+      "version": "2.0.0",
+      "category": "productivity",
+      "keywords": [
+        "self-improvement",
+        "quality-analysis",
+        "feedback-loop",
+        "critic",
+        "self-review",
+        "continuous-improvement",
+        "quality-assurance",
+        "meta-learning",
+        "automated-analysis",
+        "pattern-tracking",
+        "trend-detection"
+      ],
+      "author": {
+        "name": "C0ntr0lledCha0s",
+        "url": "https://github.com/C0ntr0lledCha0s/claude-code-plugins"
+      },
+      "repository": "https://github.com/C0ntr0lledCha0s/claude-code-plugins",
+      "license": "MIT",
+      "homepage": "https://github.com/C0ntr0lledCha0s/claude-code-plugins/tree/main/self-improvement-plugin"
+    }
+  ]
+}

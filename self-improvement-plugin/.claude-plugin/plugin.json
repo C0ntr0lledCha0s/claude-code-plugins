@@ -7,7 +7,9 @@
     "url": "https://github.com/C0ntr0lledCha0s/claude-code-plugins"
   },
   "repository": "https://github.com/C0ntr0lledCha0s/claude-code-plugins",
+  "homepage": "https://github.com/C0ntr0lledCha0s/claude-code-plugins/tree/main/self-improvement-plugin",
   "license": "MIT",
+  "category": "productivity",
   "keywords": [
     "self-improvement",
     "quality-analysis",

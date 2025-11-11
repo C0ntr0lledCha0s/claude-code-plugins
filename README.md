@@ -1,6 +1,12 @@
 # Claude Code Plugins
 
+[![Claude Marketplace](https://img.shields.io/badge/Claude-Marketplace-blue)](https://github.com/C0ntr0lledCha0s/claude-code-plugins)
+[![Plugins](https://img.shields.io/badge/Plugins-2-green)]()
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+
 A collection of plugins and meta-agents for [Claude Code](https://claude.ai/code), Anthropic's official CLI for Claude. These plugins extend Claude's capabilities with specialized agents, skills, commands, and hooks.
+
+**Now available on Claude Marketplace!** Install with one command or browse plugins directly from Claude Code.
 
 ## 🚀 What is Claude Code?
 
@@ -81,6 +87,33 @@ The Self-Improvement plugin enables Claude to critique its own work, identify qu
 
 ## 📥 Installation
 
+### From Claude Marketplace (Recommended)
+
+Install directly from the Claude Code marketplace:
+
+```bash
+# Add the marketplace to your Claude Code settings
+claude marketplace add https://github.com/C0ntr0lledCha0s/claude-code-plugins
+
+# Install specific plugins
+claude plugin install agent-builder
+claude plugin install self-improvement
+```
+
+Or add to your `.claude/settings.json`:
+
+```json
+{
+  "marketplaces": [
+    "https://github.com/C0ntr0lledCha0s/claude-code-plugins"
+  ],
+  "plugins": [
+    "agent-builder",
+    "self-improvement"
+  ]
+}
+```
+
 ### For All Projects (User-Level)
 
 Install plugins to your user-level Claude directory:
@@ -119,7 +152,7 @@ ln -s $(pwd)/claude-code-plugins/self-improvement-plugin/skills/* .claude/skills
 ln -s $(pwd)/claude-code-plugins/self-improvement-plugin/commands/* .claude/commands/
 ```
 
-### Using plugin.json (Recommended)
+### Using plugin.json
 
 If your Claude Code version supports it, use the plugin manifest:
 
@@ -187,17 +220,59 @@ Implement hooks for validation:
 
 ```
 claude-code-plugins/
-├── agent-builder/              # Meta-agent plugin
+├── .claude-plugin/
+│   └── marketplace.json       # Marketplace manifest
+├── agent-builder/             # Meta-agent plugin
 │   ├── .claude-plugin/
 │   │   └── plugin.json        # Plugin manifest
 │   ├── agents/                # Meta-architect agent
 │   ├── skills/                # 4 builder skills
 │   ├── commands/              # 5 creation commands
 │   └── README.md
+├── self-improvement-plugin/   # Self-improvement plugin
+│   ├── .claude-plugin/
+│   │   └── plugin.json        # Plugin manifest
+│   ├── agents/                # Self-critic agent
+│   ├── skills/                # Quality analysis skills
+│   ├── commands/              # Review commands
+│   ├── hooks/                 # Feedback hooks
+│   └── README.md
 ├── README.md                  # This file
 ├── LICENSE                    # MIT License
-└── .gitignore                # Git ignore rules
+└── .gitignore                 # Git ignore rules
 ```
+
+## 🛍️ Marketplace Compatibility
+
+This repository is fully compatible with Claude Code marketplaces! The `.claude-plugin/marketplace.json` file enables:
+
+- **Easy Discovery**: Browse plugins from Claude Code
+- **One-Command Install**: Install plugins with `claude plugin install <name>`
+- **Auto-Updates**: Keep plugins up-to-date automatically
+- **Metadata**: Rich plugin information including categories, keywords, and versions
+- **Strict Mode**: Full validation against plugin manifests
+
+### Marketplace Metadata
+
+- **Total Plugins**: 2
+- **Categories**: Development Tools, Productivity
+- **All plugins include**: Complete manifests, documentation, and examples
+- **Compliance**: Follows 2025 Claude Code plugin standards
+
+### Contributing Improvements Back
+
+The self-improvement plugin creates a **meta-feedback loop** where it can identify and contribute improvements to itself! See the complete workflow:
+
+📖 **[Marketplace Contribution Workflow](./MARKETPLACE_CONTRIBUTION_WORKFLOW.md)** - Detailed guide on how improvements flow from pattern detection → implementation → marketplace distribution
+
+**Key Features:**
+- 🔄 Self-discovery of plugin limitations through pattern analysis
+- 🛠️ Structured improvement and testing workflow
+- 📦 Version management and semantic versioning
+- 🚀 Automated distribution through marketplace
+- 📊 Impact tracking and continuous measurement
+
+This creates a true continuous improvement cycle where the plugins improve themselves based on usage patterns!
 
 ## 🔧 Development
 
