@@ -1,0 +1,92 @@
+{
+  "templates": {
+    "feat": {
+      "format": "feat(scope): add <feature>",
+      "examples": [
+        "feat(auth): add JWT token authentication",
+        "feat(api): add user registration endpoint",
+        "feat(ui): add dark mode toggle"
+      ]
+    },
+    "fix": {
+      "format": "fix(scope): resolve <issue>",
+      "examples": [
+        "fix(auth): resolve token expiration handling",
+        "fix(api): correct user validation logic",
+        "fix(ui): resolve button alignment issue"
+      ]
+    },
+    "docs": {
+      "format": "docs(scope): <action> <documentation>",
+      "examples": [
+        "docs(api): update authentication guide",
+        "docs(readme): add installation instructions",
+        "docs(contributing): clarify PR process"
+      ]
+    },
+    "refactor": {
+      "format": "refactor(scope): <action> <code>",
+      "examples": [
+        "refactor(auth): extract token validation logic",
+        "refactor(api): simplify error handling",
+        "refactor(utils): consolidate helper functions"
+      ]
+    },
+    "test": {
+      "format": "test(scope): <action> tests for <feature>",
+      "examples": [
+        "test(auth): add tests for token refresh",
+        "test(api): add integration tests for user API",
+        "test(utils): add unit tests for validators"
+      ]
+    },
+    "chore": {
+      "format": "chore(scope): <action> <task>",
+      "examples": [
+        "chore(deps): update dependencies",
+        "chore(ci): configure GitHub Actions",
+        "chore(lint): fix linting configuration"
+      ]
+    }
+  },
+  "scopes": {
+    "common": [
+      "api",
+      "ui",
+      "auth",
+      "database",
+      "docs",
+      "tests",
+      "ci",
+      "deps"
+    ],
+    "frontend": [
+      "components",
+      "pages",
+      "hooks",
+      "store",
+      "styles"
+    ],
+    "backend": [
+      "controllers",
+      "models",
+      "routes",
+      "middleware",
+      "services"
+    ]
+  },
+  "patterns": {
+    "breaking_change": {
+      "format": "feat(scope)!: <description>\n\nBREAKING CHANGE: <explanation>",
+      "example": "feat(api)!: change authentication endpoint\n\nBREAKING CHANGE: The /auth endpoint now requires OAuth2.\nUpdate clients to use the new authentication flow."
+    },
+    "with_issue": {
+      "format": "<type>(scope): <description>\n\n<body>\n\nCloses #<issue-number>",
+      "example": "feat(auth): add password reset functionality\n\nImplements secure password reset via email tokens.\nTokens expire after 1 hour for security.\n\nCloses #142"
+    },
+    "multi_issue": {
+      "format": "<type>(scope): <description>\n\n<body>\n\nCloses #<issue1>, closes #<issue2>",
+      "example": "fix(api): resolve multiple validation issues\n\nFixes user input validation and error messages.\n\nCloses #156, closes #157, closes #158"
+    }
+  }
+}
