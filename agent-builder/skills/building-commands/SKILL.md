@@ -154,6 +154,128 @@ Ask the user:
 - Test edge cases
 - Iterate based on results
 
+## Generator Scripts
+
+This skill includes a helper script to streamline command creation:
+
+### create-command.py - Interactive Command Generator
+
+Full-featured interactive script that guides you through creating a complete slash command.
+
+**Usage:**
+```bash
+python3 {baseDir}/scripts/create-command.py
+```
+
+**Features:**
+- Interactive prompts for name, description, tools, model
+- Validates naming conventions (action-oriented)
+- Handles argument configuration ($1, $2, $ARGUMENTS)
+- Generates argument-hint field automatically
+- Creates complete command with proper structure
+- Preview before saving
+- Automatic validation
+
+**Example Session:**
+```
+⚡ CLAUDE CODE COMMAND GENERATOR
+========================================
+
+Command name: run-tests
+Description: Runs test suite and reports results
+Allowed tools [Read, Grep, Bash]: Read, Grep, Bash
+Model [1] haiku / [2] sonnet / [3] opus → 1
+
+Does this command take arguments? (y/n) [y]: y
+Argument hint (e.g., '[filename]', '[source] [dest]'): [test-path]
+
+Workflow description: Run tests in specified path and analyze results
+
+✅ Command created: .claude/commands/run-tests.md
+```
+
+**What It Creates:**
+
+The generated command file includes:
+
+1. **YAML Frontmatter** - With all specified fields
+2. **Command Overview** - Clear description of purpose
+3. **Arguments Section** - If command takes arguments
+4. **Workflow Section** - Step-by-step execution plan
+5. **Examples** - Usage examples with expected behavior
+6. **Error Handling** - How to handle missing/invalid arguments
+7. **Important Notes** - Usage guidelines and requirements
+
+**Generated Structure:**
+```markdown
+---
+description: Runs test suite and reports results
+allowed-tools: Read, Grep, Bash
+argument-hint: [test-path]
+model: haiku
+---
+
+# Run Tests
+
+[Brief description of what this command does and when to use it]
+
+## Arguments
+
+- **`$1`**: [Description of first argument]
+- **`$ARGUMENTS`**: Use this to capture all arguments as a single string
+
+## Your Task
+
+[Workflow description provided during creation]
+
+## Workflow
+
+When this command is invoked:
+
+1. **Validate**: Check that required arguments are provided
+2. **Process**: Execute the main logic
+3. **Output**: Provide clear results to the user
+
+## Examples
+
+### Example Usage
+```
+/run-tests [example arguments]
+```
+
+Expected behavior:
+1. [What happens]
+2. [What happens]
+3. [Result]
+
+## Important Notes
+
+- [Note about usage]
+- [Note about requirements]
+- [Note about side effects]
+
+## Error Handling
+
+If arguments are missing or invalid:
+- Display clear error message
+- Show usage example
+- Provide guidance for correction
+```
+
+**When to Use:**
+- Creating new slash commands from scratch
+- Need guided workflow with validation
+- Want proper argument handling structure
+- Building commands with multiple parameters
+
+**After Creation:**
+1. Edit the generated command file
+2. Customize the workflow section with specific steps
+3. Add detailed examples for common use cases
+4. Implement error handling logic
+5. Test the command: `/command-name args`
+6. Iterate based on testing results
+
 ## Argument Handling Patterns
 
 ### Pattern 1: Single Argument

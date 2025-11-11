@@ -439,6 +439,184 @@ Ask the user:
 - Check blocking/allowing works
 - Test error handling
 
+## Generator Scripts
+
+This skill includes a helper script to streamline hook creation:
+
+### create-hook.py - Interactive Hook Generator
+
+Full-featured interactive script that creates complete hook configuration and bash scripts.
+
+**Usage:**
+```bash
+python3 {baseDir}/scripts/create-hook.py
+```
+
+**Features:**
+- Interactive prompts for hook name, event type, matcher, purpose
+- Event selection menu (PreToolUse, PostToolUse, UserPromptSubmit, Stop, etc.)
+- Matcher pattern configuration for tool events
+- Generates complete hooks.json entries
+- Creates hook bash scripts with proper structure
+- Automatic validation and setup
+- Makes scripts executable
+
+**Example Session:**
+```
+🪝 CLAUDE CODE HOOK GENERATOR
+========================================
+
+Hook name: validate-writes
+
+📌 Hook Event Type
+  1. PreToolUse   - Before a tool executes (needs matcher)
+  2. PostToolUse  - After a tool completes (needs matcher)
+  3. UserPromptSubmit - When user submits prompt
+  4. Stop - When conversation ends
+  5. SessionStart - When session begins
+  ...
+Select event [1]: 1
+
+🎯 Tool Matcher
+  1. Specific tool (e.g., 'Write', 'Bash')
+  2. Multiple tools (e.g., 'Write|Edit')
+  3. All tools ('*')
+Select matcher type [1]: 2
+Enter tools separated by | : Write|Edit
+
+Hook purpose: Validate file writes for security
+
+✅ Hook created successfully!
+
+Files created:
+  📄 .claude/hooks.json (updated)
+  📜 .claude/scripts/validate-writes.sh
+
+Hook configuration:
+  Event: PreToolUse
+  Matcher: Write|Edit
+  Script: .claude/scripts/validate-writes.sh
+```
+
+**What It Creates:**
+
+1. **hooks.json Entry** - Adds configuration to hooks.json:
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/validate-writes.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+2. **Hook Bash Script** - Complete template with:
+   - Proper shebang and error handling (`set -euo pipefail`)
+   - Logging function and log file setup
+   - Input parameter documentation
+   - Example validation functions (allow/block)
+   - Placeholder for custom logic
+   - Proper JSON return format
+
+**Generated Script Structure:**
+```bash
+#!/usr/bin/env bash
+#
+# Hook: validate-writes
+# Event: PreToolUse
+# Purpose: Validate file writes for security
+#
+
+set -euo pipefail
+
+# Configuration
+HOOK_NAME="validate-writes"
+LOG_FILE="${HOME}/.claude/hooks/validate-writes.log"
+
+# Logging function
+log_hook() {
+    echo "[$(date -Iseconds)] $*" >> "${LOG_FILE}"
+}
+
+log_hook "=== Hook triggered ==="
+
+# Input parameters for Tool events:
+#   $1 = Tool name (e.g., "Write", "Bash")
+#   $2 = Tool parameters (varies by tool)
+
+TOOL_NAME="$1"
+TOOL_PARAM="$2"
+
+log_hook "Event: PreToolUse, Tool: ${TOOL_NAME}"
+
+# TODO: Implement your hook logic here
+
+# Example: Validation that allows operation
+validate_operation() {
+    # Add your validation logic
+
+    # Return success (allow operation)
+    echo '{"decision": "allow", "reason": "Validation passed"}'
+    exit 0
+}
+
+# Main logic
+validate_operation
+
+# Exit successfully
+exit 0
+```
+
+**When to Use:**
+- Creating new event hooks
+- Need guided configuration for event types
+- Want proper hook structure with logging
+- Building validation or policy enforcement
+
+**After Creation:**
+1. Edit the generated hook script
+2. Implement your custom validation/processing logic
+3. Test by triggering the event
+4. Check logs in `~/.claude/hooks/{hook-name}.log`
+5. Validate with standard validation tools
+6. Iterate based on testing
+
+**Event-Specific Behavior:**
+
+The generator customizes the script based on the event:
+
+- **PreToolUse/PostToolUse**: Includes tool name and parameters handling
+- **UserPromptSubmit**: Includes prompt text handling
+- **Stop/SessionStart**: Includes lifecycle event documentation
+- **Others**: Generic event parameter handling
+
+**Directory Structure Created:**
+```
+.claude/
+├── hooks.json              # Updated with new hook entry
+└── hooks/
+    └── scripts/
+        └── validate-writes.sh  # Executable hook script (755)
+```
+
+Or if using plugin structure:
+```
+plugin-dir/
+└── hooks/
+    ├── hooks.json          # Hook configuration
+    └── scripts/
+        └── hook-name.sh    # Hook script
+```
+
 ## Hook Script Best Practices
 
 ### Input Parameters
