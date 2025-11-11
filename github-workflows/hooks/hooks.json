@@ -1,0 +1,60 @@
+{
+  "hooks": [
+    {
+      "name": "validate-conventional-commits",
+      "event": "PreToolUse",
+      "matcher": {
+        "tool": "Bash",
+        "pattern": "git commit"
+      },
+      "type": "prompt",
+      "prompt": "Before allowing this git commit, validate that the commit message follows conventional commits format. If it doesn't, suggest the correct format and ask the user to confirm or revise.",
+      "enabled": false,
+      "description": "Validates commit messages follow conventional commits format before execution"
+    },
+    {
+      "name": "pr-quality-gate",
+      "event": "PreToolUse",
+      "matcher": {
+        "tool": "Bash",
+        "pattern": "gh pr create|gh pr merge"
+      },
+      "type": "prompt",
+      "prompt": "Before creating or merging this PR, run quality gates to ensure: 1) All CI checks pass, 2) Tests have adequate coverage, 3) No security issues detected, 4) Code quality scores are acceptable. If any gates fail, warn the user and ask for confirmation before proceeding.",
+      "enabled": false,
+      "description": "Enforces quality gates before PR creation or merge"
+    },
+    {
+      "name": "issue-triage-reminder",
+      "event": "PostToolUse",
+      "matcher": {
+        "tool": "Bash",
+        "pattern": "gh issue create"
+      },
+      "type": "prompt",
+      "prompt": "After creating this issue, suggest running /issue-triage to properly classify, label, and check for duplicates.",
+      "enabled": false,
+      "description": "Reminds to triage newly created issues"
+    },
+    {
+      "name": "update-board-on-pr-merge",
+      "event": "PostToolUse",
+      "matcher": {
+        "tool": "Bash",
+        "pattern": "gh pr merge"
+      },
+      "type": "command",
+      "command": "bash hooks/scripts/update-board-on-merge.sh $PR_NUMBER",
+      "enabled": false,
+      "description": "Automatically updates project board when PR is merged"
+    },
+    {
+      "name": "save-workflow-state",
+      "event": "UserPromptSubmit",
+      "type": "command",
+      "command": "bash hooks/scripts/save-workflow-state.sh",
+      "enabled": false,
+      "description": "Saves current workflow state for session continuity"
+    }
+  ]
+}
