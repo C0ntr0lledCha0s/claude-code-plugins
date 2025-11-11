@@ -37,6 +37,5 @@
     "./agents/workflow-orchestrator.md",
     "./agents/pr-reviewer.md"
   ],
-  "skills": "./skills/",
-  "hooks": ["./hooks/hooks.json"]
+  "skills": "./skills/"
 }

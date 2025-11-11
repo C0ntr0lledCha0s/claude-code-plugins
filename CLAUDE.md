@@ -81,18 +81,32 @@ plugin-name/
 ## Development Commands
 
 ### Validation
+
+**Quick Validation** (recommended):
+```bash
+# Validate all plugins at once
+bash validate-all.sh
+```
+
+**Individual Component Validation**:
 ```bash
 # Validate agent
-python agent-builder/skills/building-agents/scripts/validate-agent.py .claude/agents/agent-name.md
+python3 agent-builder/skills/building-agents/scripts/validate-agent.py plugin-name/agents/agent-name.md
 
 # Validate skill
-python agent-builder/skills/building-skills/scripts/validate-skill.py .claude/skills/skill-name/
+python3 agent-builder/skills/building-skills/scripts/validate-skill.py plugin-name/skills/skill-name/
 
 # Validate command
-python agent-builder/skills/building-commands/scripts/validate-command.py .claude/commands/command-name.md
+python3 agent-builder/skills/building-commands/scripts/validate-command.py plugin-name/commands/command-name.md
 
 # Validate hooks
-python agent-builder/skills/building-hooks/scripts/validate-hooks.py .claude/hooks.json
+python3 agent-builder/skills/building-hooks/scripts/validate-hooks.py plugin-name/hooks/hooks.json
+
+# Validate plugin.json
+python3 -m json.tool plugin-name/.claude-plugin/plugin.json
+
+# Validate marketplace.json
+python3 -m json.tool .claude-plugin/marketplace.json
 ```
 
 ### Creating Components

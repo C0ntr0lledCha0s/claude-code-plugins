@@ -30,6 +30,5 @@
     "./commands/show-metrics.md"
   ],
   "agents": ["./agents/self-critic.md"],
-  "skills": "./skills/",
-  "hooks": ["./hooks/hooks.json"]
+  "skills": "./skills/"
 }
