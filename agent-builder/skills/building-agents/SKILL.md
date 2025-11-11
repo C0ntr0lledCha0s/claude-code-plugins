@@ -194,6 +194,129 @@ Ask the user:
 - Verify behavior matches expectations
 - Iterate based on results
 
+## Generator Scripts
+
+This skill includes helper scripts to streamline agent creation:
+
+### create-agent.py - Interactive Agent Generator
+
+Full-featured interactive script that guides you through creating a complete agent with prompts for all fields.
+
+**Usage:**
+```bash
+python3 {baseDir}/scripts/create-agent.py
+```
+
+**Features:**
+- Interactive prompts for name, description, tools, model
+- Validates naming conventions in real-time
+- Tool selection menu with common presets
+- Generates complete agent with proper structure
+- Preview before saving
+- Automatic validation
+
+**Example Session:**
+```
+⚡ CLAUDE CODE AGENT GENERATOR
+========================================
+
+Agent name: code-reviewer
+Description: Reviews code for quality and security issues
+Tools: [Select from menu] → Read, Grep, Glob
+Model: [1] haiku / [2] sonnet / [3] opus → 2
+Purpose: Review code quality and identify security issues
+
+✅ Agent created: .claude/agents/code-reviewer.md
+```
+
+### scaffold-agent.sh - Quick CLI Scaffolder
+
+Fast command-line tool for creating minimal agents with sensible defaults.
+
+**Usage:**
+```bash
+bash {baseDir}/scripts/scaffold-agent.sh <agent-name> <description> [tools] [model]
+```
+
+**Arguments:**
+- `agent-name`: Required - Agent identifier (lowercase-hyphens)
+- `description`: Required - Brief description
+- `tools`: Optional - Comma-separated tools (default: "Read, Grep, Glob")
+- `model`: Optional - haiku/sonnet/opus (default: "sonnet")
+
+**Examples:**
+```bash
+# Minimal agent with defaults
+bash scaffold-agent.sh code-reviewer "Reviews code for quality"
+
+# With custom tools and model
+bash scaffold-agent.sh test-runner "Runs test suites" "Read, Grep, Bash" "haiku"
+```
+
+**When to Use:**
+- Quick prototyping
+- Creating multiple agents rapidly
+- Scripting agent generation
+- When you know exactly what you need
+
+### test-agent.sh - Agent Testing Script
+
+Validates and tests agent files for correctness.
+
+**Usage:**
+```bash
+bash {baseDir}/scripts/test-agent.sh <agent-file>
+```
+
+**What It Checks:**
+- Schema validation (YAML frontmatter)
+- Naming convention compliance
+- Required fields present
+- Placeholder detection (warns about `[...]` text)
+- Common content issues
+- File structure
+
+**Example:**
+```bash
+bash test-agent.sh .claude/agents/code-reviewer.md
+
+✅ Schema validation passed
+✅ Naming conventions followed
+⚠️  Warning: Found placeholder text in brackets [...]
+   → Line 15: [Describe main function]
+   → Line 20: [Step 1 description]
+```
+
+### validate-agent.py - Schema Validator
+
+Python script for programmatic validation (used by test-agent.sh).
+
+**Usage:**
+```bash
+python3 {baseDir}/scripts/validate-agent.py <agent-file>
+```
+
+**Returns:**
+- Exit code 0 if valid
+- Exit code 1 with error messages if invalid
+
+**Use Cases:**
+- CI/CD validation
+- Pre-commit hooks
+- Automated testing
+- Integration with other tools
+
+## Validation Scripts Location
+
+All validation and generator scripts are in:
+```
+{baseDir}/scripts/
+├── create-agent.py       # Interactive generator
+├── scaffold-agent.sh     # Quick CLI scaffolder
+├── test-agent.sh         # Complete testing
+└── validate-agent.py     # Schema validation
+```
+
 ## Security Considerations
 
 When creating agents, always:

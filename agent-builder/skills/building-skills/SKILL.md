@@ -273,6 +273,91 @@ mkdir -p .claude/skills/skill-name/{scripts,references,assets}
 - Check resource access with `{baseDir}`
 - Iterate based on results
 
+## Generator Scripts
+
+This skill includes a helper script to streamline skill creation:
+
+### create-skill.py - Interactive Skill Generator
+
+Full-featured interactive script that creates a complete skill directory structure with all necessary files.
+
+**Usage:**
+```bash
+python3 {baseDir}/scripts/create-skill.py
+```
+
+**Features:**
+- Interactive prompts for name, description, tools, model
+- Validates naming conventions (gerund form preferred)
+- Optionally creates subdirectories: `scripts/`, `references/`, `assets/`
+- Generates complete SKILL.md with proper structure
+- Creates example helper scripts in `scripts/` if requested
+- Creates README files in subdirectories
+- Preview before saving
+- Automatic validation
+
+**Example Session:**
+```
+📦 CLAUDE CODE SKILL GENERATOR
+========================================
+
+Skill name: analyzing-csv-data
+Description: Analyzes CSV files and provides insights
+Version [1.0.0]: 1.0.0
+Allowed tools [Read, Grep, Glob, Bash]: Read, Grep, Glob, Bash
+Model [1] haiku / [2] sonnet / [3] opus → 2
+
+📂 Directory Structure
+Create scripts/ directory? (y/n) [y]: y
+Create references/ directory? (y/n) [y]: y
+Create assets/ directory? (y/n) [n]: n
+
+✅ Skill created: .claude/skills/analyzing-csv-data/
+   📄 SKILL.md
+   📂 scripts/
+      📜 example-helper.py (executable)
+   📂 references/
+      📄 README.md
+```
+
+**What It Creates:**
+
+1. **SKILL.md** - Main skill definition with frontmatter and body
+2. **scripts/** directory (optional) - For executable helper scripts
+   - Creates example Python script as template
+   - Makes scripts executable automatically
+3. **references/** directory (optional) - For documentation
+   - Creates README.md with guidelines
+4. **assets/** directory (optional) - For templates and resources
+   - Creates README.md with usage examples
+
+**Directory Structure Created:**
+```
+skill-name/
+├── SKILL.md              # Generated with complete structure
+├── scripts/              # If requested
+│   ├── README.md
+│   └── example-helper.py  # Executable template
+├── references/           # If requested
+│   └── README.md
+└── assets/              # If requested
+    └── README.md
+```
+
+**When to Use:**
+- Creating new skills with complete structure
+- Need scripts, references, or assets directories
+- Want guided workflow with validation
+- Building complex skills with multiple resources
+
+**After Creation:**
+1. Edit `SKILL.md` and customize the content
+2. Add your actual helper scripts to `scripts/`
+3. Add documentation to `references/`
+4. Add templates/resources to `assets/`
+5. Test the skill by triggering auto-invocation
+6. Validate with standard validation tools
+
 ## Security Considerations
 
 When creating skills:
