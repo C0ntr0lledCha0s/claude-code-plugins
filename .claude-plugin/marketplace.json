@@ -1,5 +1,5 @@
 {
-  "name": "claude-code-plugins",
+  "name": "claude-code-plugin-automations",
   "owner": {
     "name": "C0ntr0lledCha0s",
     "url": "https://github.com/C0ntr0lledCha0s"
@@ -7,7 +7,7 @@
   "metadata": {
     "description": "A collection of meta-agents and plugins for Claude Code, including tools for building agents and continuous self-improvement",
     "version": "2.0.0",
-    "homepage": "https://github.com/C0ntr0lledCha0s/claude-code-plugins",
+    "homepage": "https://github.com/C0ntr0lledCha0s/claude-code-plugin-automations",
     "pluginRoot": "./",
     "stats": {
       "totalPlugins": 2,
@@ -33,11 +33,11 @@
       ],
       "author": {
         "name": "C0ntr0lledCha0s",
-        "url": "https://github.com/C0ntr0lledCha0s/claude-code-plugins"
+        "url": "https://github.com/C0ntr0lledCha0s/claude-code-plugin-automations"
       },
-      "repository": "https://github.com/C0ntr0lledCha0s/claude-code-plugins",
+      "repository": "https://github.com/C0ntr0lledCha0s/claude-code-plugin-automations",
       "license": "MIT",
-      "homepage": "https://github.com/C0ntr0lledCha0s/claude-code-plugins/tree/main/agent-builder"
+      "homepage": "https://github.com/C0ntr0lledCha0s/claude-code-plugin-automations/tree/main/agent-builder"
     },
     {
       "name": "self-improvement",
@@ -60,11 +60,11 @@
       ],
       "author": {
         "name": "C0ntr0lledCha0s",
-        "url": "https://github.com/C0ntr0lledCha0s/claude-code-plugins"
+        "url": "https://github.com/C0ntr0lledCha0s/claude-code-plugin-automations"
       },
-      "repository": "https://github.com/C0ntr0lledCha0s/claude-code-plugins",
+      "repository": "https://github.com/C0ntr0lledCha0s/claude-code-plugin-automations",
       "license": "MIT",
-      "homepage": "https://github.com/C0ntr0lledCha0s/claude-code-plugins/tree/main/self-improvement-plugin"
+      "homepage": "https://github.com/C0ntr0lledCha0s/claude-code-plugin-automations/tree/main/self-improvement-plugin"
     }
   ]
 }
