@@ -91,7 +91,7 @@ def select_model():
     return model_map.get(choice, 'sonnet')
 
 
-def generate_agent(name, description, tools, model, purpose, capabilities, workflow):
+def generate_agent(name, description, tools, model, purpose, capabilities_array, capabilities, workflow):
     """Generate agent markdown content"""
 
     # Build frontmatter
@@ -100,6 +100,11 @@ def generate_agent(name, description, tools, model, purpose, capabilities, workf
         f"name: {name}",
         f"description: {description}"
     ]
+
+    # Add capabilities array to frontmatter
+    if capabilities_array:
+        import json
+        frontmatter.append(f"capabilities: {json.dumps(capabilities_array)}")
 
     if tools:
         frontmatter.append(f"tools: {tools}")
@@ -198,9 +203,29 @@ def main():
     print("Describe the agent's role in one sentence (e.g., 'an expert code reviewer...')")
     purpose = prompt_user("Purpose")
 
-    # Get capabilities
-    print("\n💪 Agent Capabilities")
-    print("List key capabilities, one per line. Enter blank line when done.")
+    # Get capabilities array (for frontmatter)
+    print("\n💪 Agent Capabilities (for frontmatter)")
+    print("List specialized tasks this agent can perform (kebab-case).")
+    print("Examples: analyze-code, review-security, generate-tests")
+    print("Enter capabilities one per line, blank line when done.")
+    capabilities_array = []
+    count = 1
+    while True:
+        cap = input(f"  {count}. ").strip()
+        if not cap:
+            break
+        # Convert to kebab-case if not already
+        cap_kebab = re.sub(r'[^a-z0-9-]+', '-', cap.lower()).strip('-')
+        capabilities_array.append(cap_kebab)
+        count += 1
+
+    if not capabilities_array:
+        # Default capability based on name
+        capabilities_array = [name]
+
+    # Get capabilities description (for body)
+    print("\n💪 Agent Capabilities Details (for documentation)")
+    print("List key capabilities with descriptions, one per line. Enter blank line when done.")
     capabilities_list = []
     count = 1
     while True:
@@ -227,7 +252,7 @@ def main():
     workflow = '\n'.join(workflow_list) if workflow_list else "1. **Analyze**: Understand the request\n2. **Execute**: Perform the task\n3. **Verify**: Check the results"
 
     # Generate agent content
-    content = generate_agent(name, description, tools, model, purpose, capabilities, workflow)
+    content = generate_agent(name, description, tools, model, purpose, capabilities_array, capabilities, workflow)
 
     # Determine output path
     output_dir = Path.cwd() / '.claude' / 'agents'

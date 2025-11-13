@@ -76,6 +76,34 @@ def validate_agent(file_path: str) -> tuple[bool, list[str]]:
         if len(description) < 20:
             errors.append(f"Warning: Description is very short ({len(description)} chars). Consider adding more detail about when to use this agent.")
 
+    # Validate capabilities field (recommended)
+    if 'capabilities' not in frontmatter:
+        errors.append("Recommendation: Add 'capabilities' field listing specialized tasks this agent can perform (e.g., capabilities: [\"task1\", \"task2\"])")
+    else:
+        capabilities = frontmatter['capabilities']
+
+        # Validate capabilities is a list
+        if not isinstance(capabilities, list):
+            errors.append(f"Invalid capabilities field: must be an array (e.g., [\"task1\", \"task2\"])")
+        else:
+            # Validate each capability is a string
+            for i, cap in enumerate(capabilities):
+                if not isinstance(cap, str):
+                    errors.append(f"Invalid capability at index {i}: must be a string")
+                elif len(cap.strip()) == 0:
+                    errors.append(f"Invalid capability at index {i}: cannot be empty")
+                # Recommend kebab-case format
+                elif not re.match(r'^[a-z0-9-]+$', cap):
+                    errors.append(f"Recommendation: Capability '{cap}' should use kebab-case (lowercase with hyphens)")
+
+            # Warn if too many capabilities
+            if len(capabilities) > 10:
+                errors.append(f"Warning: {len(capabilities)} capabilities listed. Consider keeping it focused (3-7 is ideal)")
+
+            # Warn if no capabilities
+            if len(capabilities) == 0:
+                errors.append("Warning: Capabilities array is empty. Add task descriptions to help Claude understand when to invoke this agent.")
+
     # Validate optional fields
     if 'tools' in frontmatter:
         tools = frontmatter['tools']
