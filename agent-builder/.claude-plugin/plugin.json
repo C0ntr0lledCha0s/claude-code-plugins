@@ -19,13 +19,7 @@
     "automation",
     "development-tools"
   ],
-  "commands": [
-    "./commands/new-agent.md",
-    "./commands/new-skill.md",
-    "./commands/new-command.md",
-    "./commands/new-hook.md",
-    "./commands/new-plugin.md"
-  ],
+  "commands": "./commands/",
   "agents": ["./agents/meta-architect.md"],
   "skills": "./skills/"
 }
