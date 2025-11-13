@@ -20,7 +20,7 @@ Intelligently analyze and commit changes with automatic file grouping and conven
 
 ## Arguments
 
-- **`$1`** (optional): Commit mode
+- **First argument** (optional): Commit mode - accessed as first positional parameter
   - `all`: Analyze all changes and suggest grouped commits
   - `staged`: Commit only staged changes
   - `context`: Review conversation history and commit relevant files
@@ -33,24 +33,26 @@ Intelligently analyze and commit changes with automatic file grouping and conven
 
 When this command is invoked:
 
-1. **Validate argument**:
-   ```bash
-   # Sanitize and validate mode argument
-   MODE="${1:-interactive}"
-   case "$MODE" in
-     all|staged|context|scope|interactive) ;;
-     *) echo "Invalid mode. Use: all|staged|context|scope|interactive" && exit 1 ;;
-   esac
-   ```
+1. **Validate argument** (CRITICAL - prevents command injection):
+   - ONLY accept predefined modes from the allowlist
+   - Reject any invalid input immediately
+   - DO NOT pass user input directly to shell commands
+
 2. **Analyze changes**: Run git status and diff to identify all modified files
+
 3. **Invoke managing-commits skill**: Delegate to skill for intelligent grouping
+
 4. **Group files**: Skill groups files by scope, type, and relationships
+
 5. **Generate commit messages**: Create conventional commit messages for each group
+
 6. **Present plan**: Show user the proposed commits with file lists
+
 7. **Get approval**: Ask user to confirm, edit, or cancel
+
 8. **Execute commits**: Create each commit sequentially with proper staging
 
-**Security**: All user input is validated against an allowlist before use. No user input is passed directly to shell commands.
+**Security Note**: The argument MUST be validated against this exact allowlist: `all`, `staged`, `context`, `scope`, `interactive`. If the provided argument does not exactly match one of these strings (or is empty, defaulting to `interactive`), reject it immediately with an error message and stop execution.
 
 ## What This Does
 
@@ -97,5 +99,22 @@ The skill uses multiple strategies:
 - Separates implementation, tests, and docs into distinct commits
 - Validates commit quality before executing
 - Integrates with the `managing-commits` skill for validation
+
+## Error Handling
+
+If the mode argument is invalid or missing from the allowlist:
+1. Display error: "Invalid mode: '{provided_value}'. Must be one of: all, staged, context, scope, interactive"
+2. Show usage example: `/commit-smart [mode]`
+3. Stop execution immediately - do not proceed with analysis or commits
+4. Never pass the invalid input to any shell command or git operation
+
+If there are no changes to commit:
+1. Display message: "No changes detected. Working directory is clean."
+2. Exit gracefully without error
+
+If git operations fail:
+1. Display the git error message
+2. Explain what went wrong in user-friendly terms
+3. Suggest corrective actions
 
 Use this when you want clean, well-organized commits without manual file selection!

@@ -32,8 +32,8 @@ If auto-installation fails, install manually: https://github.com/cli/cli#install
 
 ## Arguments
 
-- `$1` (required): Project title/name
-- `$2` (optional): Template type (sprint, kanban, roadmap). Default: kanban
+- **First argument** (required): Project title/name
+- **Second argument** (optional): Template type (sprint, kanban, roadmap). Default: kanban
 
 ## What This Does
 

@@ -1,13 +1,23 @@
 ---
 name: managing-projects
 description: GitHub Projects v2 expertise for creating and managing project boards, fields, views, and items. Auto-invokes when project boards, sprints, kanban workflows, or issue organization is mentioned. Uses GraphQL for advanced project operations.
-version: 1.0.0
+version: 1.1.0
 allowed-tools: Bash, Read, Grep, Glob
 ---
 
 # Managing GitHub Projects (v2) Skill
 
 You are a GitHub Projects v2 expert specializing in project board creation, management, and automation. You understand the modern GraphQL-based Projects API and can help users organize their work effectively using boards, views, and custom fields.
+
+## When to Use This Skill
+
+Auto-invoke this skill when the conversation involves:
+- Creating or managing GitHub project boards
+- Setting up sprint planning or kanban workflows
+- Organizing issues and PRs using project boards
+- Configuring project fields, views, or automation
+- GraphQL operations for GitHub Projects v2
+- Keywords: "project board", "sprint", "kanban", "roadmap", "project view"
 
 ## Your Expertise
 

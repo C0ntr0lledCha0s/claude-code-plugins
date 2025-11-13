@@ -16,12 +16,49 @@ success() { echo -e "${GREEN}✓${NC} $1"; }
 warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 error() { echo -e "${RED}✗${NC} $1" >&2; }
 
+# Minimum required version of gh CLI
+MIN_GH_VERSION="2.0.0"
+
 # Check if gh is installed
 check_gh_installed() {
     if command -v gh >/dev/null 2>&1; then
         return 0
     fi
     return 1
+}
+
+# Parse version string and convert to comparable number
+version_to_number() {
+    local version="$1"
+    # Extract major.minor.patch and convert to comparable number
+    # e.g., "2.40.1" -> 2040001
+    echo "$version" | awk -F. '{ printf("%d%03d%03d\n", $1, $2, $3) }'
+}
+
+# Check if installed gh version meets minimum requirement
+check_gh_version() {
+    local current_version
+    local min_version_num
+    local current_version_num
+
+    # Get current version (output format: "gh version 2.40.1 (2024-01-15)")
+    current_version=$(gh version 2>/dev/null | head -n1 | awk '{print $3}')
+
+    if [[ -z "$current_version" ]]; then
+        warn "Could not determine gh CLI version"
+        return 1
+    fi
+
+    min_version_num=$(version_to_number "$MIN_GH_VERSION")
+    current_version_num=$(version_to_number "$current_version")
+
+    if [[ $current_version_num -lt $min_version_num ]]; then
+        warn "GitHub CLI version $current_version is below minimum required version $MIN_GH_VERSION"
+        info "Please upgrade: https://github.com/cli/cli/releases"
+        return 1
+    fi
+
+    return 0
 }
 
 # Detect operating system
@@ -183,6 +220,14 @@ main() {
     if check_gh_installed; then
         success "GitHub CLI is installed"
 
+        # Check version
+        if ! check_gh_version; then
+            warn "GitHub CLI version check failed or version is too old"
+            info "Current minimum required version: $MIN_GH_VERSION"
+            info "Upgrade recommended for best compatibility"
+            # Continue anyway (non-blocking warning)
+        fi
+
         # Check authentication
         if check_gh_auth; then
             success "GitHub CLI is authenticated"
@@ -204,6 +249,12 @@ main() {
         if [ "$auto_install" = "true" ]; then
             if install_gh_cli; then
                 success "Installation complete"
+
+                # Verify version after installation
+                if ! check_gh_version; then
+                    warn "Installed version may be outdated"
+                    info "Minimum required version: $MIN_GH_VERSION"
+                fi
 
                 # Check auth after installation
                 if [ "$auto_auth" = "true" ]; then
