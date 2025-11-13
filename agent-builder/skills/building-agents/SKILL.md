@@ -369,6 +369,263 @@ model: sonnet
 ---
 ```
 
+## Maintaining and Updating Agents
+
+Agents aren't "set and forget" - they need regular maintenance and updates to stay effective.
+
+### When to Update an Agent
+
+Update agents when:
+- **Requirements change**: New features or different scope
+- **Performance issues**: Too slow, too expensive, not accurate enough
+- **Security concerns**: New vulnerabilities or permission needs
+- **Best practices evolve**: New patterns become standard
+- **User feedback**: Agent doesn't meet expectations
+- **Validation fails**: Schema or content issues detected
+
+### Available Maintenance Commands
+
+#### `/agent-builder:agents:update [agent-name]`
+Interactive workflow for updating existing agents:
+- Update description, tools, or model
+- Apply changes with diff preview
+- Validate before and after changes
+- Backup original automatically
+
+**Use when**: You know what needs to change
+
+#### `/agent-builder:agents:enhance [agent-name]`
+AI-powered analysis and improvement suggestions:
+- Comprehensive scoring (schema, security, quality, maintainability)
+- Prioritized recommendations
+- Identifies gaps and anti-patterns
+- Suggests specific improvements
+
+**Use when**: You want expert analysis of what could be better
+
+#### `/agent-builder:agents:audit`
+Project-wide agent quality audit:
+- Scans all agents in project
+- Security and compliance scoring
+- Identifies critical issues
+- Generates comprehensive report
+
+**Use when**: You want to assess all agents at once
+
+#### `/agent-builder:agents:compare [agent1] [agent2]`
+Side-by-side comparison:
+- Highlights differences
+- Trade-off analysis
+- Helps choose right agent
+- Identifies overlap
+
+**Use when**: Deciding between similar agents or looking for redundancy
+
+### Maintenance Workflow
+
+**Recommended maintenance cycle:**
+
+```
+1. Regular Audits (monthly)
+   └─> /agent-builder:agents:audit
+       └─> Identifies agents needing attention
+
+2. Deep Analysis (as needed)
+   └─> /agent-builder:agents:enhance <agent-name>
+       └─> Get specific recommendations
+
+3. Apply Updates (interactive)
+   └─> /agent-builder:agents:update <agent-name>
+       └─> Make changes with confidence
+
+4. Validate Results
+   └─> Test agent behavior
+   └─> Re-run enhance to verify improvements
+```
+
+### Maintenance Scripts
+
+#### update-agent.py - Interactive Updater
+Full-featured script for updating agents with diff preview.
+
+**Usage:**
+```bash
+python3 {baseDir}/scripts/update-agent.py <agent-name>
+```
+
+**Features:**
+- Finds agent automatically
+- Interactive menu for changes
+- Shows diff before applying
+- Validates after update
+- Creates automatic backup
+
+**Example:**
+```bash
+python3 update-agent.py code-reviewer
+# Interactive prompts for updates
+# Shows diff
+# Applies with confirmation
+```
+
+#### enhance-agent.py - Quality Analyzer
+Deep analysis script that scores agents across multiple dimensions.
+
+**Usage:**
+```bash
+python3 {baseDir}/scripts/enhance-agent.py <agent-name>
+```
+
+**What it analyzes:**
+- Schema compliance (10 points)
+- Security (10 points)
+- Content quality (10 points)
+- Maintainability (10 points)
+- Overall score (average)
+
+**Output:**
+- Detailed findings by category
+- Prioritized recommendations
+- Actionable next steps
+- Pass/warning/fail status
+
+**Example:**
+```bash
+python3 enhance-agent.py code-reviewer
+
+Enhancement Analysis: code-reviewer
+Overall Score: 8.5/10
+
+Detailed Scores:
+  Schema Compliance:  10/10
+  Security:           9/10
+  Content Quality:    8/10
+  Maintainability:    7/10
+
+Recommendations:
+1. 🟢 MEDIUM: Add more examples (currently 1, recommend 3+)
+2. 🟢 LOW: Improve section headings for better navigation
+```
+
+### Common Update Scenarios
+
+#### Scenario 1: Reduce Tool Permissions
+**Problem**: Agent has Bash but doesn't need it
+**Solution**:
+```bash
+/agent-builder:agents:update my-agent
+> What to update? 2 (tools)
+> Select preset: 1 (Read, Grep, Glob)
+✅ Tools updated, security improved
+```
+
+#### Scenario 2: Improve Performance/Cost
+**Problem**: Agent uses opus but could use sonnet
+**Solution**:
+```bash
+/agent-builder:agents:update my-agent
+> What to update? 3 (model)
+> Select model: 2 (sonnet)
+✅ 3x faster, 5x cheaper, still capable
+```
+
+#### Scenario 3: Add Missing Documentation
+**Problem**: Agent lacks examples and error handling
+**Solution**:
+```bash
+/agent-builder:agents:enhance my-agent
+# Reviews findings
+/agent-builder:agents:update my-agent
+# Manually add examples section
+# Manually add error handling section
+```
+
+#### Scenario 4: Fix Security Issues
+**Problem**: Agent has Bash without input validation
+**Solution**:
+```bash
+/agent-builder:agents:enhance my-agent
+# Identifies security issue
+/agent-builder:agents:update my-agent
+# Either: remove Bash, or add validation docs
+```
+
+### Migration and Modernization
+
+As best practices evolve, older agents may need modernization:
+
+**Signs an agent needs modernization:**
+- Created before current guidelines
+- Uses outdated patterns
+- Lower enhancement score (<7/10)
+- Missing key sections (examples, error handling)
+- Over-permissioned tools
+
+**Modernization checklist:**
+- [ ] Update to current schema (check required fields)
+- [ ] Apply security best practices
+- [ ] Add missing sections (workflow, examples, error handling)
+- [ ] Optimize tool permissions (minimal necessary)
+- [ ] Optimize model selection (cost/performance)
+- [ ] Improve description clarity (when to invoke)
+- [ ] Add concrete examples (2-3 scenarios)
+- [ ] Document edge cases
+
+**Automated modernization:**
+```bash
+/agent-builder:agents:enhance my-agent
+# Review suggestions
+/agent-builder:agents:update my-agent
+# Apply recommended changes
+```
+
+### Version Control Best Practices
+
+When updating agents in version control:
+
+**Before making changes:**
+```bash
+git add .claude/agents/my-agent.md
+git commit -m "backup: agent before major update"
+```
+
+**After changes:**
+```bash
+python3 enhance-agent.py my-agent  # Verify improvement
+git add .claude/agents/my-agent.md
+git commit -m "refactor(agent): improve my-agent security and docs
+
+- Reduced tool permissions (removed Bash)
+- Added input validation documentation
+- Added 3 concrete examples
+- Improved error handling section
+
+Enhanced score: 6.5/10 → 8.5/10"
+```
+
+**Track improvements over time:**
+```bash
+# Before
+python3 enhance-agent.py my-agent > before.txt
+
+# Make changes
+/agent-builder:agents:update my-agent
+
+# After
+python3 enhance-agent.py my-agent > after.txt
+
+# Compare
+diff before.txt after.txt
+```
+
+### Integration with Other Tools
+
+The maintenance commands and scripts integrate with:
+- **validation scripts**: Ensure schema compliance
+- **building-agents skill**: Provides best practices knowledge
+- **git hooks**: Can run validations automatically
+- **CI/CD**: Can enforce quality gates
+
 ## Validation Checklist
 
 Before finalizing an agent, verify:
