@@ -2,6 +2,42 @@
 
 This document provides the complete specification for implementing all remaining components of the github-workflows plugin.
 
+## Recent Updates
+
+### ✅ GitHub CLI Auto-Installation (2025-01-13)
+
+**Feature Added**: Automatic detection and installation of GitHub CLI (`gh`)
+
+**Files Created/Modified**:
+1. **NEW**: [scripts/ensure-gh-cli.sh](scripts/ensure-gh-cli.sh) - 230 lines
+   - Auto-detects OS (Linux, macOS, Windows)
+   - Installs `gh` using appropriate package manager
+   - Supports Debian/Ubuntu (apt), RHEL/Fedora (dnf/yum), Arch (pacman), macOS (brew), Windows (winget)
+   - Checks authentication status
+   - Provides clear error messages and fallback instructions
+
+2. **UPDATED**: [skills/managing-projects/scripts/project-helpers.sh](skills/managing-projects/scripts/project-helpers.sh)
+   - Replaced `check_gh_auth()` with `ensure_gh_cli()`
+   - Now automatically installs `gh` if missing
+   - Updated all functions to use new prerequisite check
+
+3. **UPDATED**: [skills/managing-projects/SKILL.md](skills/managing-projects/SKILL.md)
+   - Added "Prerequisites and Setup" section
+   - Documents auto-installation feature
+   - Provides manual installation instructions
+
+4. **UPDATED**: [commands/project-create.md](commands/project-create.md)
+   - Added prerequisites section
+   - Documents supported platforms
+   - Explains auto-installation process
+
+5. **UPDATED**: [README.md](README.md)
+   - Updated prerequisites section
+   - Documents auto-installation capabilities
+   - Provides comprehensive manual installation guide
+
+**Impact**: Users no longer need to manually install GitHub CLI - the plugin handles it automatically. Improves first-time user experience significantly.
+
 ## Implementation Status
 
 ### ✅ Completed (25% - Foundation)

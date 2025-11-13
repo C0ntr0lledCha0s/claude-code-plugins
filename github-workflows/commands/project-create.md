@@ -8,6 +8,20 @@ argument-hint: "[project-name] [template]"
 
 Create a new GitHub Projects v2 board with a predefined template.
 
+## Prerequisites
+
+This command requires GitHub CLI (`gh`). The plugin will automatically:
+1. ✅ Check if `gh` is installed
+2. ✅ Install it if missing (requires sudo on Linux)
+3. ✅ Prompt for authentication if needed
+
+**Supported platforms**:
+- Linux: Debian/Ubuntu (apt), RHEL/Fedora (dnf/yum), Arch (pacman)
+- macOS: via Homebrew
+- Windows: via winget
+
+If auto-installation fails, install manually: https://github.com/cli/cli#installation
+
 ## Usage
 
 ```bash

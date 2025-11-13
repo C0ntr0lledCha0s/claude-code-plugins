@@ -44,9 +44,35 @@ The GitHub Workflows plugin provides end-to-end automation for GitHub-based deve
 
 ### Prerequisites
 
-- GitHub CLI (`gh`) installed and authenticated
+**Required**:
 - Git repository
 - Claude Code with plugin support
+
+**GitHub CLI** (`gh`):
+The plugin automatically installs and configures GitHub CLI for you on:
+- **Linux**: Debian/Ubuntu (apt), RHEL/Fedora (dnf/yum), Arch (pacman)
+- **macOS**: via Homebrew
+- **Windows**: via winget
+
+If automatic installation fails, install manually:
+```bash
+# Debian/Ubuntu/WSL
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list
+sudo apt update && sudo apt install gh
+
+# macOS
+brew install gh
+
+# Windows
+winget install --id GitHub.cli
+
+# Authenticate after installation
+gh auth login
+```
+
+More info: https://github.com/cli/cli#installation
 
 ### Install Plugin
 
