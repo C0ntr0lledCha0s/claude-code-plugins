@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash hooks/scripts/update-board-on-merge.sh $PR_NUMBER"
+            "command": "bash github-workflows/hooks/scripts/update-board-on-merge.sh $PR_NUMBER"
           }
         ]
       }
@@ -45,7 +45,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash hooks/scripts/save-workflow-state.sh"
+            "command": "bash github-workflows/hooks/scripts/save-workflow-state.sh"
           }
         ]
       }
