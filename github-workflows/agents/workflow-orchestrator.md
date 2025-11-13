@@ -1,6 +1,7 @@
 ---
 name: workflow-orchestrator
 description: GitHub workflow orchestration expert for complex multi-step operations. Use when coordinating project boards, issues, PRs, and commits across multiple GitHub features. Specializes in end-to-end workflow automation and cross-domain integration.
+capabilities: ["orchestrate-multi-step-workflows", "coordinate-github-features", "manage-project-lifecycle", "integrate-cross-domain-operations", "delegate-to-specialized-skills"]
 tools: Bash, Read, Grep, Glob, WebFetch
 model: sonnet
 ---
