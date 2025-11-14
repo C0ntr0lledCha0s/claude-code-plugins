@@ -481,6 +481,180 @@ Full templates and examples are available at:
 - `{baseDir}/templates/skill-template.md` - Basic skill template
 - `{baseDir}/references/skill-examples.md` - Real-world examples
 
+## Maintaining and Updating Skills
+
+### Maintenance Workflows
+
+Once skills are created, they need ongoing maintenance. This skill includes comprehensive tools for skill lifecycle management.
+
+### Update Skill Interactive Tool
+
+```bash
+/agent-builder:skills:update <skill-name>
+```
+
+Interactive updater for modifying existing skills:
+- Update description (with auto-invocation triggers)
+- Change allowed-tools
+- Update version (semantic versioning)
+- Run validation
+- **CRITICAL**: Blocks if model field present (skills don't support it)
+
+**Script**: `{baseDir}/scripts/update-skill.py`
+
+### Enhance Skill Quality Analyzer
+
+```bash
+/agent-builder:skills:enhance <skill-name>
+```
+
+AI-powered quality analysis with 7-category scoring:
+- Schema compliance (naming, gerund form, required fields)
+- **Model field check** (CRITICAL - must not be present)
+- Auto-invocation clarity (WHEN to invoke, triggers)
+- Directory structure ({baseDir} usage, script permissions)
+- Security analysis (Bash validation, permissions)
+- Content quality (sections, examples, documentation)
+- Maintainability (structure, formatting, references)
+
+Returns overall score (0-10) and prioritized recommendations.
+
+**Script**: `{baseDir}/scripts/enhance-skill.py`
+
+### Migrate Skill Schema Tool
+
+```bash
+/agent-builder:skills:migrate <skill-name> --apply
+/agent-builder:skills:migrate --dry-run  # Preview all
+/agent-builder:skills:migrate --apply     # Apply to all
+```
+
+Automated schema migration:
+- ⚠️ **CRITICAL**: Removes model field (skills don't support it)
+- Checks gerund form naming
+- Validates auto-invocation triggers
+- Shows diff, creates backup, validates after
+
+**Script**: `{baseDir}/scripts/migrate-skill.py`
+
+### Validation Script
+
+```bash
+python3 {baseDir}/scripts/validate-skill.py <skill-directory/>
+```
+
+Schema and convention validation:
+- Directory structure
+- SKILL.md format
+- Required fields (name, description)
+- **Model field prohibition** (CRITICAL error if present)
+- Gerund form naming (recommendation)
+- Auto-invocation triggers
+- {baseDir} usage
+- Script executability
+
+### Common Maintenance Scenarios
+
+#### Scenario 1: Skill Has Model Field (CRITICAL)
+
+**Problem**: Skill has `model:` field in SKILL.md (invalid for skills)
+
+```bash
+# Quick fix: Migrate to remove model field
+/agent-builder:skills:migrate my-skill --apply
+```
+
+**Why**: Skills are "always-on" and use conversation context. Only agents support model specification.
+
+#### Scenario 2: Unclear Auto-Invocation
+
+**Problem**: Claude doesn't invoke skill when expected
+
+```bash
+# Analyze auto-invocation clarity
+/agent-builder:skills:enhance my-skill
+
+# Update description with triggers
+/agent-builder:skills:update my-skill
+> Update description
+> Add: "Auto-invokes when user wants to..."
+```
+
+#### Scenario 3: Improve Skill Quality
+
+```bash
+# Get quality score and recommendations
+/agent-builder:skills:enhance my-skill
+
+# Apply improvements interactively
+/agent-builder:skills:update my-skill
+```
+
+#### Scenario 4: Standardize Skills Across Repository
+
+```bash
+# Preview all needed migrations
+/agent-builder:skills:migrate --dry-run
+
+# Apply all migrations
+/agent-builder:skills:migrate --apply
+```
+
+### Reference Documentation
+
+Comprehensive maintenance guide available:
+
+- **[Skill Maintenance Guide]({baseDir}/references/skill-maintenance-guide.md)**: Complete reference
+  - Critical differences: skills vs commands
+  - Model field prohibition (why and how)
+  - Common issues and solutions
+  - Quick checklist
+  - Workflow guidance
+
+### Best Practices for Maintenance
+
+1. **Critical Rule: No Model Field**
+   - Skills cannot have `model:` field
+   - Only agents support model specification
+   - Run migration immediately if found
+
+2. **Clear Auto-Invocation**
+   - Description must state WHEN to invoke
+   - Use trigger words: "Auto-invokes when", "Use when"
+   - Be specific about scenarios
+
+3. **Gerund Form Naming**
+   - Recommended: `building-*`, `analyzing-*`, `creating-*`
+   - Action-oriented: verb + -ing
+   - Distinguishes skills from commands
+
+4. **Resource Management**
+   - Use {baseDir} for all resource paths
+   - Keep scripts executable (chmod +x)
+   - Organize with scripts/, references/, assets/
+
+5. **Regular Quality Checks**
+   - Run `/agent-builder:skills:enhance` periodically
+   - Address critical issues immediately
+   - Plan improvements for recommendations
+
+### Your Role When Maintaining Skills
+
+When the user asks to update, enhance, or fix skills:
+
+1. **Assess the situation**: Understand what needs to change
+2. **Check for model field**: This is the most critical issue
+3. **Recommend appropriate tool**: Point to the right maintenance tool
+4. **Guide the process**: Help interpret analysis results
+5. **Apply fixes**: Use update/migrate tools to make changes
+6. **Validate**: Ensure changes resolved issues
+
+When users mention:
+- "skill doesn't activate" → Check auto-invocation clarity
+- "skill fails to load" → Check for model field (migrate)
+- "improve my skill" → Run enhance, apply recommendations
+- "check all skills" → Run migrate --dry-run for critical issues
+
 ## Your Role
 
 When the user asks to create a skill:
