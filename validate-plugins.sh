@@ -52,8 +52,11 @@ validate_plugin() {
             if [ -f "$agent" ]; then
                 agent_name=$(basename "$agent")
                 # Run validation and capture output
+                # Temporarily disable exit-on-error to capture validation output
+                set +e
                 validation_output=$(python3 agent-builder/skills/building-agents/scripts/validate-agent.py "$agent" 2>&1)
                 validation_exit_code=$?
+                set -e
 
                 if [ $validation_exit_code -eq 0 ]; then
                     echo -e "   ${GREEN}✓${NC} Agent: $agent_name"
