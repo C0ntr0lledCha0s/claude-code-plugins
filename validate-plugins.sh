@@ -48,10 +48,15 @@ validate_plugin() {
         for agent in "$plugin_dir/agents"/*.md; do
             if [ -f "$agent" ]; then
                 agent_name=$(basename "$agent")
-                if python3 agent-builder/skills/building-agents/scripts/validate-agent.py "$agent" >/dev/null 2>&1; then
+                # Run validation and capture output
+                validation_output=$(python3 agent-builder/skills/building-agents/scripts/validate-agent.py "$agent" 2>&1)
+                validation_exit_code=$?
+
+                if [ $validation_exit_code -eq 0 ]; then
                     echo -e "   ${GREEN}✓${NC} Agent: $agent_name"
                 else
-                    echo -e "   ${RED}✗${NC} Agent: $agent_name (validation failed)"
+                    echo -e "   ${RED}✗${NC} Agent: $agent_name (validation failed with exit code $validation_exit_code)"
+                    echo "      Validation output: $validation_output"
                     ((ERRORS++))
                 fi
             fi
