@@ -1,0 +1,117 @@
+name: Validate Plugins
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install jsonschema pyyaml
+
+      - name: Validate all plugins
+        run: |
+          echo "🔍 Validating all plugins..."
+          bash validate-all.sh
+
+      - name: Validate JSON files
+        run: |
+          echo "🔍 Validating JSON syntax..."
+          for file in $(find . -name "*.json" -not -path "*/node_modules/*" -not -path "*/.git/*"); do
+            echo "Validating $file"
+            python3 -m json.tool "$file" > /dev/null || exit 1
+          done
+          echo "✓ All JSON files valid"
+
+      - name: Validate agent definitions
+        run: |
+          echo "🔍 Validating agent definitions..."
+          for agent in */agents/*.md; do
+            if [ -f "$agent" ]; then
+              echo "Validating $agent"
+              python3 agent-builder/skills/building-agents/scripts/validate-agent.py "$agent" || exit 1
+            fi
+          done
+          echo "✓ All agents valid"
+
+      - name: Validate skill definitions
+        run: |
+          echo "🔍 Validating skill definitions..."
+          for skill_dir in */skills/*/; do
+            if [ -f "${skill_dir}SKILL.md" ]; then
+              echo "Validating $skill_dir"
+              python3 agent-builder/skills/building-skills/scripts/validate-skill.py "$skill_dir" || exit 1
+            fi
+          done
+          echo "✓ All skills valid"
+
+      - name: Validate command definitions
+        run: |
+          echo "🔍 Validating command definitions..."
+          for cmd in */commands/*.md; do
+            if [ -f "$cmd" ]; then
+              echo "Validating $cmd"
+              python3 agent-builder/skills/building-commands/scripts/validate-command.py "$cmd" || exit 1
+            fi
+          done
+          echo "✓ All commands valid"
+
+      - name: Validate hooks
+        run: |
+          echo "🔍 Validating hook definitions..."
+          for hooks_file in */hooks/hooks.json; do
+            if [ -f "$hooks_file" ]; then
+              echo "Validating $hooks_file"
+              python3 agent-builder/skills/building-hooks/scripts/validate-hooks.py "$hooks_file" || exit 1
+            fi
+          done
+          echo "✓ All hooks valid"
+
+      - name: Check for security issues
+        run: |
+          echo "🔍 Checking for security issues..."
+
+          # Check for hardcoded paths (should use ${PLUGIN_DIR})
+          if grep -r "github-workflows/hooks" --include="hooks.json" .; then
+            echo "❌ Found hardcoded plugin paths in hooks"
+            exit 1
+          fi
+
+          # Check for secrets in code
+          if grep -riE "(password|secret|api[_-]?key|token)\s*=\s*['\"][^'\"]+['\"]" \
+            --include="*.sh" --include="*.py" --include="*.md" \
+            --exclude-dir=".git" --exclude-dir="node_modules" .; then
+            echo "⚠️  Warning: Potential secrets found in code"
+          fi
+
+          echo "✓ Security checks passed"
+
+      - name: Validation summary
+        if: success()
+        run: |
+          echo "✅ All validations passed!"
+          echo ""
+          echo "Validated:"
+          echo "  - Plugin manifests"
+          echo "  - JSON syntax"
+          echo "  - Agent definitions"
+          echo "  - Skill definitions"
+          echo "  - Command definitions"
+          echo "  - Hook configurations"
+          echo "  - Security checks"
