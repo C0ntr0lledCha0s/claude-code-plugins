@@ -1,237 +1,35 @@
 {
   "standard": {
-    "description": "Standard label taxonomy with type, priority, and scope",
-    "labels": [
-      {
-        "name": "bug",
-        "color": "d73a4a",
-        "description": "Something isn't working"
-      },
-      {
-        "name": "feature",
-        "color": "0075ca",
-        "description": "New feature or request"
-      },
-      {
-        "name": "documentation",
-        "color": "0075ca",
-        "description": "Improvements or additions to documentation"
-      },
-      {
-        "name": "enhancement",
-        "color": "a2eeef",
-        "description": "Improvement to existing feature"
-      },
-      {
-        "name": "priority:high",
-        "color": "b60205",
-        "description": "High priority - address soon"
-      },
-      {
-        "name": "priority:medium",
-        "color": "d93f0b",
-        "description": "Medium priority - normal workflow"
-      },
-      {
-        "name": "priority:low",
-        "color": "fbca04",
-        "description": "Low priority - nice to have"
-      },
-      {
-        "name": "scope:frontend",
-        "color": "5319e7",
-        "description": "Frontend/UI changes"
-      },
-      {
-        "name": "scope:backend",
-        "color": "1d76db",
-        "description": "Backend/API changes"
-      },
-      {
-        "name": "scope:docs",
-        "color": "c5def5",
-        "description": "Documentation only"
-      }
-    ]
-  },
-  "comprehensive": {
-    "description": "Comprehensive label taxonomy with all categories",
-    "labels": [
-      {
-        "name": "bug",
-        "color": "d73a4a",
-        "description": "Something isn't working"
-      },
-      {
-        "name": "feature",
-        "color": "0075ca",
-        "description": "New feature or request"
-      },
-      {
-        "name": "enhancement",
-        "color": "a2eeef",
-        "description": "Improvement to existing feature"
-      },
-      {
-        "name": "documentation",
-        "color": "0075ca",
-        "description": "Improvements or additions to documentation"
-      },
-      {
-        "name": "refactor",
-        "color": "fbca04",
-        "description": "Code refactoring - no behavior change"
-      },
-      {
-        "name": "test",
-        "color": "d4c5f9",
-        "description": "Testing improvements"
-      },
-      {
-        "name": "chore",
-        "color": "fef2c0",
-        "description": "Maintenance and tooling"
-      },
-      {
-        "name": "priority:critical",
-        "color": "b60205",
-        "description": "Critical - blocking issue, fix immediately"
-      },
-      {
-        "name": "priority:high",
-        "color": "d93f0b",
-        "description": "High priority - address soon"
-      },
-      {
-        "name": "priority:medium",
-        "color": "fbca04",
-        "description": "Medium priority - normal workflow"
-      },
-      {
-        "name": "priority:low",
-        "color": "c5def5",
-        "description": "Low priority - nice to have"
-      },
-      {
-        "name": "scope:frontend",
-        "color": "5319e7",
-        "description": "Frontend/UI changes"
-      },
-      {
-        "name": "scope:backend",
-        "color": "1d76db",
-        "description": "Backend/API changes"
-      },
-      {
-        "name": "scope:database",
-        "color": "0e8a16",
-        "description": "Database changes"
-      },
-      {
-        "name": "scope:infrastructure",
-        "color": "006b75",
-        "description": "Infrastructure/DevOps changes"
-      },
-      {
-        "name": "scope:docs",
-        "color": "c5def5",
-        "description": "Documentation only"
-      },
-      {
-        "name": "status:needs-triage",
-        "color": "d4c5f9",
-        "description": "Awaiting triage"
-      },
-      {
-        "name": "status:blocked",
-        "color": "b60205",
-        "description": "Blocked by dependency"
-      },
-      {
-        "name": "status:in-progress",
-        "color": "0e8a16",
-        "description": "Currently being worked on"
-      },
-      {
-        "name": "status:needs-review",
-        "color": "fbca04",
-        "description": "Ready for review"
-      },
-      {
-        "name": "status:ready-to-merge",
-        "color": "0e8a16",
-        "description": "Approved and ready to merge"
-      },
-      {
-        "name": "size:xs",
-        "color": "c5def5",
-        "description": "Extra small - trivial change"
-      },
-      {
-        "name": "size:s",
-        "color": "bfdadc",
-        "description": "Small - minor change"
-      },
-      {
-        "name": "size:m",
-        "color": "fef2c0",
-        "description": "Medium - moderate change"
-      },
-      {
-        "name": "size:l",
-        "color": "fbca04",
-        "description": "Large - significant change"
-      },
-      {
-        "name": "size:xl",
-        "color": "d93f0b",
-        "description": "Extra large - major change"
-      },
-      {
-        "name": "security",
-        "color": "b60205",
-        "description": "Security-related issue"
-      },
-      {
-        "name": "breaking-change",
-        "color": "b60205",
-        "description": "Breaking change - major version bump"
-      }
-    ]
+    "description": "Standard label taxonomy for most projects",
+    "labels": {
+      "type": [
+        {"name": "bug", "color": "d73a4a", "description": "Something isn't working"},
+        {"name": "feature", "color": "0075ca", "description": "New feature or request"},
+        {"name": "enhancement", "color": "a2eeef", "description": "Improvement to existing functionality"},
+        {"name": "docs", "color": "0075ca", "description": "Documentation changes"},
+        {"name": "refactor", "color": "fbca04", "description": "Code refactoring"},
+        {"name": "test", "color": "1d76db", "description": "Testing related changes"}
+      ],
+      "priority": [
+        {"name": "priority:high", "color": "b60205", "description": "High priority"},
+        {"name": "priority:medium", "color": "d93f0b", "description": "Medium priority"},
+        {"name": "priority:low", "color": "fbca04", "description": "Low priority"}
+      ],
+      "scope": [
+        {"name": "scope:frontend", "color": "c2e0c6", "description": "Frontend/UI related"},
+        {"name": "scope:backend", "color": "c5def5", "description": "Backend/API related"},
+        {"name": "scope:docs", "color": "d4c5f9", "description": "Documentation related"}
+      ]
+    }
   },
   "minimal": {
-    "description": "Minimal label set - just the essentials",
-    "labels": [
-      {
-        "name": "bug",
-        "color": "d73a4a",
-        "description": "Something isn't working"
-      },
-      {
-        "name": "feature",
-        "color": "0075ca",
-        "description": "New feature or request"
-      },
-      {
-        "name": "documentation",
-        "color": "0075ca",
-        "description": "Documentation changes"
-      },
-      {
-        "name": "priority:high",
-        "color": "b60205",
-        "description": "High priority"
-      },
-      {
-        "name": "priority:low",
-        "color": "fbca04",
-        "description": "Low priority"
-      },
-      {
-        "name": "needs-triage",
-        "color": "d4c5f9",
-        "description": "Needs initial review"
-      }
-    ]
+    "description": "Minimal label set for small projects",
+    "labels": {
+      "type": [
+        {"name": "bug", "color": "d73a4a", "description": "Something isn't working"},
+        {"name": "feature", "color": "0075ca", "description": "New feature or request"},
+        {"name": "docs", "color": "0075ca", "description": "Documentation changes"}
+      ]
+    }
   }
 }

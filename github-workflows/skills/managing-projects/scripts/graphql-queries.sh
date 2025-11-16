@@ -36,6 +36,51 @@ check_gh_auth() {
     fi
 }
 
+# Retry logic with exponential backoff
+retry_graphql() {
+    local max_attempts="${RETRY_MAX_ATTEMPTS:-3}"
+    local initial_delay="${RETRY_INITIAL_DELAY:-2}"
+    local max_delay="${RETRY_MAX_DELAY:-30}"
+    local attempt=1
+    local delay="$initial_delay"
+
+    while [ "$attempt" -le "$max_attempts" ]; do
+        # Execute the command (passed as arguments)
+        if "$@" 2>/dev/null; then
+            return 0
+        fi
+
+        local exit_code=$?
+
+        if [ "$attempt" -eq "$max_attempts" ]; then
+            error "GraphQL operation failed after $max_attempts attempts"
+            return "$exit_code"
+        fi
+
+        warn "Attempt $attempt/$max_attempts failed. Retrying in ${delay}s..."
+        sleep "$delay"
+
+        # Exponential backoff with cap
+        delay=$((delay * 2))
+        if [ "$delay" -gt "$max_delay" ]; then
+            delay="$max_delay"
+        fi
+
+        attempt=$((attempt + 1))
+    done
+
+    return 1
+}
+
+# Execute GraphQL query with retry
+execute_graphql_query() {
+    local query="$1"
+    shift
+    local variables=("$@")
+
+    retry_graphql gh api graphql -f query="$query" "${variables[@]}"
+}
+
 # Build project query
 build_project_query() {
     local org="$1"

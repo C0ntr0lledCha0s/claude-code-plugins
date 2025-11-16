@@ -1,7 +1,7 @@
 ---
 name: triaging-issues
 description: GitHub issue triage and management expertise. Auto-invokes when issue triage, duplicate detection, issue relationships, or issue management are mentioned. Integrates with existing github-issues skill.
-version: 1.0.0
+version: 1.1.0
 allowed-tools: Bash, Read, Grep, Glob
 ---
 
