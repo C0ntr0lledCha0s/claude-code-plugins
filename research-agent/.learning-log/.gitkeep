@@ -1,0 +1,25 @@
+# Learning Log Directory
+
+This directory stores personal learnings extracted from research sessions to build a searchable knowledge base over time.
+
+## Structure
+
+- `YYYY-MM/` - Learnings organized by month
+- `index.json` - Master index of all learnings
+- `tags.json` - Tag organization and counts
+
+Each learning is a markdown file with YAML frontmatter containing:
+- Key insights from research
+- How to apply the learning
+- Related learnings
+- Questions to explore
+- Application status
+
+## Privacy
+
+By default, this directory is tracked in git for personal use. To make it private:
+
+1. Add to `.gitignore`: `research-agent/.learning-log/`
+2. Each user maintains their own local learning log
+
+See `scripts/learning-manager.py` for managing learnings and `assets/learning-log-guide.md` for complete documentation.
