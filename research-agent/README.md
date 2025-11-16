@@ -582,6 +582,119 @@ For comprehensive caching documentation, see [assets/caching-guide.md](assets/ca
 
 Example cache entry: [.research-cache/investigations/example-jwt-authentication-2025-01-15.md](.research-cache/investigations/example-jwt-authentication-2025-01-15.md)
 
+## Comparative Analysis Framework
+
+The Research Agent includes a structured, quantitative framework for making objective technology decisions using weighted criteria scoring.
+
+### Why Use This Framework?
+
+**Benefits**:
+- **Objective**: Numbers-based decisions, not gut-feel
+- **Transparent**: Clear reasoning stakeholders can understand
+- **Defensible**: Evidence-backed trade-off analysis
+- **Reproducible**: Consistent methodology across decisions
+- **Sensitivity-Aware**: Shows how robust your decision is
+
+### How It Works
+
+**5-Step Process**:
+
+1. **Define options**: What technologies/approaches are you comparing?
+2. **Select criteria**: Use the decision criteria catalog
+3. **Assign weights**: Based on your priorities (must sum to 1.0)
+4. **Rate each option**: Score 1-10 for each criterion
+5. **Calculate scores**: Weighted average determines winner
+
+**Formula**: `Weighted Score = (Weight₁ × Score₁) + (Weight₂ × Score₂) + ... + (Weightₙ × Scoreₙ)`
+
+### Quick Example
+
+**Question**: Redux vs Zustand for React state management?
+
+**Criteria & Weights**:
+```
+Developer Experience: 0.30 (most important)
+Learning Curve: 0.25
+Performance: 0.20
+Type Safety: 0.15
+DevTools: 0.10
+Total: 1.00 ✓
+```
+
+**Ratings**:
+| Criterion | Redux | Zustand |
+|-----------|-------|---------|
+| DX | 6/10 | 9/10 |
+| Learning | 5/10 | 9/10 |
+| Performance | 8/10 | 9/10 |
+| TypeScript | 8/10 | 8/10 |
+| DevTools | 10/10 | 6/10 |
+
+**Result**:
+- Redux: 6.55/10
+- Zustand: 8.35/10
+- **Winner**: Zustand (significantly better on top priorities)
+
+### Framework Resources
+
+**Templates & Guides**:
+- **[comparison-framework-template.md](assets/comparison-framework-template.md)**: Complete template for conducting weighted comparisons
+- **[decision-criteria-catalog.md](assets/decision-criteria-catalog.md)**: Comprehensive library of 15+ evaluation criteria with rating guides
+- **[comparison-framework-guide.md](assets/comparison-framework-guide.md)**: Complete usage guide with sensitivity analysis, best practices, and FAQ
+
+**Example Comparison**:
+- [Redux vs Zustand](.research-cache/comparisons/example-redux-vs-zustand-2025-01-15.md): Full worked example demonstrating the framework
+
+**Key Features**:
+- **General Criteria**: Performance, Scalability, DX, Learning Curve, Documentation, Community, Ecosystem, Maturity, Security, Cost (15+ total)
+- **Domain-Specific Criteria**: Pre-defined sets for web frameworks, databases, API patterns, testing, architecture
+- **Preset Weight Profiles**: Startup, enterprise, performance-critical, team growth configurations
+- **Sensitivity Analysis**: Test decision robustness by varying weights
+- **Advanced Techniques**: Multi-option comparison, hierarchical criteria, disqualifying factors
+
+### Using the Framework
+
+**Via `/compare` command**:
+```bash
+/compare Redux vs Zustand for React state management
+```
+
+The Research Agent will:
+1. Select relevant criteria from the catalog
+2. Assign context-appropriate weights
+3. Rate each option with evidence
+4. Calculate weighted scores
+5. Perform sensitivity analysis
+6. Provide context-specific recommendations
+
+**Manual Use**:
+1. Copy [comparison-framework-template.md](assets/comparison-framework-template.md)
+2. Select criteria from [decision-criteria-catalog.md](assets/decision-criteria-catalog.md)
+3. Follow the [comparison-framework-guide.md](assets/comparison-framework-guide.md) workflow
+4. Fill in ratings with evidence
+5. Calculate scores and analyze
+
+**Cache the result**:
+```bash
+python3 scripts/cache-manager.py add comparisons \
+  "Redux vs Zustand comparison" \
+  comparison-output.md \
+  --tags "react,state-management,redux,zustand"
+```
+
+### When to Use
+
+**Good candidates for framework**:
+- Technology selection (frameworks, libraries, databases)
+- Architecture decisions (monorepo vs polyrepo, REST vs GraphQL)
+- Tool evaluation (testing frameworks, build tools)
+- Approach comparison (design patterns, state management)
+
+**Not ideal for**:
+- Simple yes/no decisions
+- Decisions with one clearly superior option
+- Highly subjective choices with no measurable criteria
+
 ## Usage Examples
 
 ### Example 1: Understanding Unfamiliar Code
