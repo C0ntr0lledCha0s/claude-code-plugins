@@ -7,6 +7,16 @@
 
 set -euo pipefail
 
+# Cleanup trap for error handling
+cleanup() {
+    local exit_code=$?
+    if [[ $exit_code -ne 0 ]]; then
+        log_analysis "ERROR: Script failed with exit code $exit_code"
+        # Note: Database operations already use file locking, so no rollback needed
+    fi
+}
+trap cleanup EXIT
+
 # Configuration
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${HOME}/.claude/plugins/self-improvement}"
 LOG_DIR="${HOME}/.claude/self-improvement"
@@ -79,17 +89,28 @@ analyze_keywords() {
 
     log_analysis "--- Keyword Analysis ---"
 
-    # Critical keywords
-    local bug_count=$(grep -ci "bug\|error\|issue\|problem\|wrong\|fail" "${file}" 2>/dev/null || echo "0")
-    local security_count=$(grep -ci "security\|vulnerability\|injection\|xss\|auth\|password" "${file}" 2>/dev/null || echo "0")
+    # Use more accurate pattern matching with negative lookarounds where possible
+    # Count actual bug mentions (not "debug", "no bug", etc.)
+    local bug_count=$(grep -cP "(?<!de)bug(?!ging)|(?:found|discovered|encounter(?:ed)?|has)\s+(?:a|an)?\s*(?:bug|error|issue)|(?:doesn't|does\s+not)\s+work|(?:is\s+)?broken|failing\s+test" "${file}" 2>/dev/null || echo "0")
+
+    # Exclude false positives like "error handling", "no error"
+    local error_count=$(grep -cP "(?<!no\s)(?<!handle\s)error(?!\s+handling)(?!\s+message)" "${file}" 2>/dev/null || echo "0")
+
+    # Security keywords - be specific
+    local security_count=$(grep -cP "(?:sql\s+)?injection|xss|cross-site\s+scripting|csrf|vulnerabilit(?:y|ies)|security\s+(?:issue|flaw|bug)|exploit|attack|malicious" "${file}" 2>/dev/null || echo "0")
+
+    # Quality improvement mentions
     local quality_count=$(grep -ci "quality\|review\|improve\|optimize\|refactor" "${file}" 2>/dev/null || echo "0")
-    local help_count=$(grep -ci "help\|how to\|how do\|can you\|please" "${file}" 2>/dev/null || echo "0")
 
-    log_analysis "Keywords: bugs=${bug_count}, security=${security_count}, quality=${quality_count}, help_requests=${help_count}"
+    # Help requests (user asking questions)
+    local help_count=$(grep -ci "how\s+(?:do|to|can)|can\s+you|please\s+help|what\s+is|explain" "${file}" 2>/dev/null || echo "0")
 
-    # Check for repeated issues
-    if [[ ${bug_count} -gt 5 ]]; then
-        track_pattern "high_bug_discussion" "Conversation had ${bug_count} bug-related mentions" "important"
+    log_analysis "Keywords: bugs=${bug_count}, errors=${error_count}, security=${security_count}, quality=${quality_count}, help_requests=${help_count}"
+
+    # Check for repeated issues with adjusted thresholds
+    local total_issues=$((bug_count + error_count))
+    if [[ ${total_issues} -gt 8 ]]; then
+        track_pattern "high_bug_discussion" "Conversation had ${total_issues} bug/error mentions (bugs: ${bug_count}, errors: ${error_count})" "important"
     fi
 
     if [[ ${security_count} -gt 3 ]]; then
@@ -130,15 +151,16 @@ analyze_errors() {
 
     log_analysis "--- Error Analysis ---"
 
-    # Error indicators
-    local syntax_errors=$(grep -ci "syntax error\|syntaxerror\|parse error" "${file}" 2>/dev/null || echo "0")
-    local runtime_errors=$(grep -ci "runtime error\|exception\|traceback\|stack trace" "${file}" 2>/dev/null || echo "0")
-    local logic_errors=$(grep -ci "logic error\|incorrect\|doesn't work\|not working" "${file}" 2>/dev/null || echo "0")
+    # Error indicators - more precise patterns
+    local syntax_errors=$(grep -cP "syntax\s+error|SyntaxError|parse\s+error|ParseError|unexpected\s+token" "${file}" 2>/dev/null || echo "0")
+    local runtime_errors=$(grep -cP "runtime\s+error|RuntimeError|exception(?:\s+occurred)?|traceback|stack\s+trace|uncaught\s+exception" "${file}" 2>/dev/null || echo "0")
+    local logic_errors=$(grep -cP "logic\s+error|incorrect\s+(?:result|output|behavior)|(?:doesn't|does\s+not)\s+work|not\s+working\s+as\s+expected" "${file}" 2>/dev/null || echo "0")
 
     log_analysis "Errors: syntax=${syntax_errors}, runtime=${runtime_errors}, logic=${logic_errors}"
 
-    if [[ $((syntax_errors + runtime_errors + logic_errors)) -gt 3 ]]; then
-        track_pattern "high_error_rate" "Multiple errors encountered in conversation" "critical"
+    local total_errors=$((syntax_errors + runtime_errors + logic_errors))
+    if [[ ${total_errors} -gt 3 ]]; then
+        track_pattern "high_error_rate" "Multiple errors encountered in conversation (${total_errors} total)" "critical"
     fi
 }
 
@@ -172,14 +194,14 @@ analyze_sentiment() {
 
     log_analysis "--- Sentiment Analysis ---"
 
-    # Positive indicators
-    local positive=$(grep -ci "thank\|thanks\|great\|perfect\|excellent\|good\|helpful" "${file}" 2>/dev/null || echo "0")
+    # Positive indicators - look for genuine appreciation
+    local positive=$(grep -cP "thank(?:s| you)|great(?:\s+job)?|perfect|excellent|awesome|helpful|(?:works?|working)\s+(?:great|perfectly|well)" "${file}" 2>/dev/null || echo "0")
 
-    # Negative indicators
-    local negative=$(grep -ci "wrong\|incorrect\|doesn't work\|not working\|confused\|unclear" "${file}" 2>/dev/null || echo "0")
+    # Negative indicators - actual problems, not mentions of fixing them
+    local negative=$(grep -cP "(?:is\s+)?wrong|incorrect(?:\s+result)?|(?:still\s+)?(?:doesn't|does\s+not)\s+work|not\s+working|confused|(?:very\s+)?unclear|frustrat(?:ed|ing)" "${file}" 2>/dev/null || echo "0")
 
-    # Confusion indicators
-    local confusion=$(grep -ci "what\?\|how\?\|why\?\|I don't understand\|unclear\|confusing" "${file}" 2>/dev/null || echo "0")
+    # Confusion indicators - actual confusion, not just questions
+    local confusion=$(grep -cP "(?:I\s+)?don't\s+understand|unclear\s+(?:about|how|why)|confus(?:ed|ing)|what\s+do\s+you\s+mean|can\s+you\s+explain|not\s+sure\s+(?:what|how|why)" "${file}" 2>/dev/null || echo "0")
 
     log_analysis "Sentiment: positive=${positive}, negative=${negative}, confusion=${confusion}"
 
@@ -187,11 +209,11 @@ analyze_sentiment() {
     local sentiment_score=$((positive - negative))
 
     if [[ ${sentiment_score} -lt -3 ]]; then
-        track_pattern "negative_user_experience" "User expressed frustration or confusion" "critical"
+        track_pattern "negative_user_experience" "User expressed frustration or confusion (score: ${sentiment_score})" "critical"
     fi
 
     if [[ ${confusion} -gt 5 ]]; then
-        track_pattern "unclear_communication" "User asked many clarifying questions" "important"
+        track_pattern "unclear_communication" "User asked many clarifying questions (${confusion} instances)" "important"
     fi
 }
 
@@ -203,44 +225,104 @@ track_pattern() {
 
     log_analysis "PATTERN DETECTED: [${severity}] ${pattern_type}: ${description}"
 
-    # Update patterns database
-    python3 - <<EOF
+    # Update patterns database - using argument passing to prevent injection
+    python3 - "$pattern_type" "$description" "$severity" "$TIMESTAMP" "$PATTERNS_DB" <<'EOF'
 import json
 import sys
+import fcntl
 from datetime import datetime
 
-patterns_file = "${PATTERNS_DB}"
+# Get arguments safely
+pattern_type = sys.argv[1]
+description = sys.argv[2]
+severity = sys.argv[3]
+timestamp = sys.argv[4]
+patterns_file = sys.argv[5]
+
+# Basic validation
+if severity not in ['critical', 'important', 'minor']:
+    print(f"WARNING: Invalid severity '{severity}', defaulting to 'minor'", file=sys.stderr)
+    severity = 'minor'
+
+def validate_patterns_data(data):
+    """Basic validation of patterns data structure"""
+    if not isinstance(data, dict):
+        raise ValueError("Patterns data must be a dict")
+    if 'patterns' not in data:
+        raise ValueError("Patterns data must have 'patterns' key")
+    if not isinstance(data['patterns'], list):
+        raise ValueError("'patterns' must be a list")
+
+    for pattern in data['patterns']:
+        if not isinstance(pattern, dict):
+            raise ValueError("Each pattern must be a dict")
+        required_keys = ['type', 'description', 'severity', 'count']
+        for key in required_keys:
+            if key not in pattern:
+                raise ValueError(f"Pattern missing required key: {key}")
+
+    return True
 
 try:
-    with open(patterns_file, 'r') as f:
-        data = json.load(f)
-except:
-    data = {"patterns": []}
+    # Open with read/write for atomic update with file locking
+    with open(patterns_file, 'r+') as f:
+        # Acquire exclusive lock
+        fcntl.flock(f.fileno(), fcntl.LOCK_EX)
 
-# Find existing pattern or create new
-pattern_found = False
-for pattern in data['patterns']:
-    if pattern['type'] == "${pattern_type}":
-        pattern['count'] = pattern.get('count', 0) + 1
-        pattern['last_seen'] = "${TIMESTAMP}"
-        pattern['severity'] = "${severity}"
-        pattern_found = True
-        break
+        try:
+            f.seek(0)
+            data = json.load(f)
+            # Validate existing data
+            validate_patterns_data(data)
+        except (json.JSONDecodeError, ValueError) as e:
+            print(f"WARNING: Invalid patterns file, resetting: {e}", file=sys.stderr)
+            data = {"patterns": []}
 
-if not pattern_found:
-    data['patterns'].append({
-        'type': "${pattern_type}",
-        'description': "${description}",
-        'severity': "${severity}",
+        # Find existing pattern or create new
+        pattern_found = False
+        for pattern in data['patterns']:
+            if pattern['type'] == pattern_type:
+                pattern['count'] = pattern.get('count', 0) + 1
+                pattern['last_seen'] = timestamp
+                pattern['severity'] = severity
+                pattern['description'] = description  # Update description
+                pattern_found = True
+                break
+
+        if not pattern_found:
+            data['patterns'].append({
+                'type': pattern_type,
+                'description': description,
+                'severity': severity,
+                'count': 1,
+                'first_seen': timestamp,
+                'last_seen': timestamp
+            })
+
+        # Write atomically
+        f.seek(0)
+        f.truncate()
+        json.dump(data, f, indent=2)
+
+        # Lock automatically released when file closes
+
+    print(f"Pattern tracked: {pattern_type}")
+except FileNotFoundError:
+    # File doesn't exist, create it
+    data = {"patterns": [{
+        'type': pattern_type,
+        'description': description,
+        'severity': severity,
         'count': 1,
-        'first_seen': "${TIMESTAMP}",
-        'last_seen': "${TIMESTAMP}"
-    })
-
-with open(patterns_file, 'w') as f:
-    json.dump(data, f, indent=2)
-
-print(f"Pattern tracked: ${pattern_type}")
+        'first_seen': timestamp,
+        'last_seen': timestamp
+    }]}
+    with open(patterns_file, 'w') as f:
+        json.dump(data, f, indent=2)
+    print(f"Pattern tracked: {pattern_type}")
+except Exception as e:
+    print(f"Error tracking pattern: {e}", file=sys.stderr)
+    sys.exit(1)
 EOF
 }
 
@@ -251,39 +333,71 @@ track_learning() {
 
     log_analysis "LEARNING: ${learning_key}: ${learning_text}"
 
-    python3 - <<EOF
+    # Update learnings database - using argument passing to prevent injection
+    python3 - "$learning_key" "$learning_text" "$TIMESTAMP" "$LEARNINGS_DB" <<'EOF'
 import json
+import sys
+import fcntl
 from datetime import datetime
 
-learnings_file = "${LEARNINGS_DB}"
+# Get arguments safely
+learning_key = sys.argv[1]
+learning_text = sys.argv[2]
+timestamp = sys.argv[3]
+learnings_file = sys.argv[4]
 
 try:
-    with open(learnings_file, 'r') as f:
-        data = json.load(f)
-except:
-    data = {"learnings": []}
+    # Open with read/write for atomic update with file locking
+    with open(learnings_file, 'r+') as f:
+        # Acquire exclusive lock
+        fcntl.flock(f.fileno(), fcntl.LOCK_EX)
 
-# Check if learning already exists
-learning_found = False
-for learning in data['learnings']:
-    if learning['key'] == "${learning_key}":
-        learning['reinforced_count'] = learning.get('reinforced_count', 0) + 1
-        learning['last_reinforced'] = "${TIMESTAMP}"
-        learning_found = True
-        break
+        try:
+            f.seek(0)
+            data = json.load(f)
+        except (json.JSONDecodeError, ValueError):
+            data = {"learnings": []}
 
-if not learning_found:
-    data['learnings'].append({
-        'key': "${learning_key}",
-        'text': "${learning_text}",
-        'learned_at': "${TIMESTAMP}",
+        # Check if learning already exists
+        learning_found = False
+        for learning in data['learnings']:
+            if learning['key'] == learning_key:
+                learning['reinforced_count'] = learning.get('reinforced_count', 0) + 1
+                learning['last_reinforced'] = timestamp
+                learning['text'] = learning_text  # Update text
+                learning_found = True
+                break
+
+        if not learning_found:
+            data['learnings'].append({
+                'key': learning_key,
+                'text': learning_text,
+                'learned_at': timestamp,
+                'reinforced_count': 0
+            })
+
+        # Write atomically
+        f.seek(0)
+        f.truncate()
+        json.dump(data, f, indent=2)
+
+        # Lock automatically released when file closes
+
+    print(f"Learning tracked: {learning_key}")
+except FileNotFoundError:
+    # File doesn't exist, create it
+    data = {"learnings": [{
+        'key': learning_key,
+        'text': learning_text,
+        'learned_at': timestamp,
         'reinforced_count': 0
-    })
-
-with open(learnings_file, 'w') as f:
-    json.dump(data, f, indent=2)
-
-print(f"Learning tracked: ${learning_key}")
+    }]}
+    with open(learnings_file, 'w') as f:
+        json.dump(data, f, indent=2)
+    print(f"Learning tracked: {learning_key}")
+except Exception as e:
+    print(f"Error tracking learning: {e}", file=sys.stderr)
+    sys.exit(1)
 EOF
 }
 
@@ -294,34 +408,70 @@ store_session_metrics() {
     local assistant_turns="$3"
     local total_lines="$4"
 
-    python3 - <<EOF
+    # Update metrics database - using argument passing and file locking
+    python3 - "$SESSION_ID" "$TIMESTAMP" "$total_turns" "$user_turns" "$assistant_turns" "$total_lines" "$METRICS_DB" <<'EOF'
 import json
+import sys
+import fcntl
 
-metrics_file = "${METRICS_DB}"
+# Get arguments safely
+session_id = sys.argv[1]
+timestamp = sys.argv[2]
+total_turns = int(sys.argv[3])
+user_turns = int(sys.argv[4])
+assistant_turns = int(sys.argv[5])
+total_lines = int(sys.argv[6])
+metrics_file = sys.argv[7]
 
 try:
-    with open(metrics_file, 'r') as f:
-        data = json.load(f)
-except:
-    data = {"sessions": []}
+    # Open with read/write for atomic update with file locking
+    with open(metrics_file, 'r+') as f:
+        # Acquire exclusive lock
+        fcntl.flock(f.fileno(), fcntl.LOCK_EX)
 
-data['sessions'].append({
-    'session_id': "${SESSION_ID}",
-    'timestamp': "${TIMESTAMP}",
-    'total_turns': ${total_turns},
-    'user_turns': ${user_turns},
-    'assistant_turns': ${assistant_turns},
-    'total_lines': ${total_lines}
-})
+        try:
+            f.seek(0)
+            data = json.load(f)
+        except (json.JSONDecodeError, ValueError):
+            data = {"sessions": []}
 
-# Keep only last 100 sessions
-if len(data['sessions']) > 100:
-    data['sessions'] = data['sessions'][-100:]
+        data['sessions'].append({
+            'session_id': session_id,
+            'timestamp': timestamp,
+            'total_turns': total_turns,
+            'user_turns': user_turns,
+            'assistant_turns': assistant_turns,
+            'total_lines': total_lines
+        })
 
-with open(metrics_file, 'w') as f:
-    json.dump(data, f, indent=2)
+        # Keep only last 100 sessions
+        if len(data['sessions']) > 100:
+            data['sessions'] = data['sessions'][-100:]
 
-print("Session metrics stored")
+        # Write atomically
+        f.seek(0)
+        f.truncate()
+        json.dump(data, f, indent=2)
+
+        # Lock automatically released when file closes
+
+    print("Session metrics stored")
+except FileNotFoundError:
+    # File doesn't exist, create it
+    data = {"sessions": [{
+        'session_id': session_id,
+        'timestamp': timestamp,
+        'total_turns': total_turns,
+        'user_turns': user_turns,
+        'assistant_turns': assistant_turns,
+        'total_lines': total_lines
+    }]}
+    with open(metrics_file, 'w') as f:
+        json.dump(data, f, indent=2)
+    print("Session metrics stored")
+except Exception as e:
+    print(f"Error storing metrics: {e}", file=sys.stderr)
+    sys.exit(1)
 EOF
 }
 
@@ -385,30 +535,70 @@ EOF
 
 # Main execution
 main() {
-    # Try to find conversation transcript
-    # This path may vary depending on Claude Code's transcript storage
-    local transcript_path="${CLAUDE_TRANSCRIPT:-}"
+    local transcript_path=""
+    local transcript_found=false
 
-    if [[ -z "${transcript_path}" ]]; then
-        # Try common locations
-        transcript_path="${HOME}/.claude/transcripts/current.txt"
-    fi
+    # Try multiple locations to find conversation transcript
+    local possible_paths=(
+        "${CLAUDE_TRANSCRIPT:-}"
+        "${CLAUDE_CONVERSATION_FILE:-}"
+        "${HOME}/.claude/transcripts/current.txt"
+        "${HOME}/.claude/transcripts/latest.txt"
+        "${HOME}/.claude/conversations/current.txt"
+        "${HOME}/.claude/conversations/latest.txt"
+        "${CLAUDE_WORKSPACE:-}/.claude/transcript.txt"
+        "${PWD}/.claude/transcript.txt"
+    )
 
-    if [[ -f "${transcript_path}" ]]; then
+    log_analysis "Searching for conversation transcript..."
+
+    for possible_path in "${possible_paths[@]}"; do
+        # Skip empty paths
+        if [[ -z "${possible_path}" ]]; then
+            continue
+        fi
+
+        if [[ -f "${possible_path}" ]]; then
+            transcript_path="${possible_path}"
+            transcript_found=true
+            log_analysis "Found transcript at: ${transcript_path}"
+            break
+        fi
+    done
+
+    if [[ "${transcript_found}" == true ]]; then
+        # Transcript found - perform full analysis
         analyze_transcript "${transcript_path}"
+
+        # Generate summary
+        generate_summary
+
+        log_analysis "=== Conversation analysis complete ==="
+
+        # Return success
+        echo '{"decision": "approve", "reason": "Conversation analyzed for continuous improvement"}'
     else
-        log_analysis "Transcript not found at ${transcript_path}, performing lightweight analysis"
-        # Even without transcript, we can track that a session occurred
+        # Transcript not found - log error and inform user
+        log_analysis "ERROR: Cannot locate conversation transcript"
+        log_analysis "Searched paths:"
+        for path in "${possible_paths[@]}"; do
+            if [[ -n "${path}" ]]; then
+                log_analysis "  - ${path}"
+            fi
+        done
+
+        # Store minimal metrics to record the attempt
         store_session_metrics 0 0 0 0
+
+        # Return with user-visible warning
+        echo '{
+            "decision": "approve",
+            "hookSpecificOutput": {
+                "warning": "⚠️ Self-Improvement Analysis Failed\n\nCannot locate conversation transcript for automated analysis.\n\nPattern tracking and learning features are not working.\n\nTo fix:\n1. Check if CLAUDE_TRANSCRIPT environment variable is set\n2. Verify transcript storage location\n3. See: ~/.claude/self-improvement/analysis.log for details\n\nAlternatively, disable this hook if transcripts are not available."
+            }
+        }'
     fi
 
-    # Generate summary
-    generate_summary
-
-    log_analysis "=== Conversation analysis complete ==="
-
-    # Return success
-    echo '{"decision": "approve", "reason": "Conversation analyzed for continuous improvement"}'
     exit 0
 }
 

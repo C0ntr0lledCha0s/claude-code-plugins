@@ -7,6 +7,16 @@
 
 set -euo pipefail
 
+# Cleanup trap for error handling
+cleanup() {
+    local exit_code=$?
+    if [[ $exit_code -ne 0 ]]; then
+        # Log error but don't fail the session start
+        echo "ERROR: load-learnings.sh failed with exit code $exit_code" >&2
+    fi
+}
+trap cleanup EXIT
+
 # Configuration
 LOG_DIR="${HOME}/.claude/self-improvement"
 PATTERNS_DB="${LOG_DIR}/patterns.json"
@@ -24,13 +34,15 @@ load_learnings() {
         exit 0
     fi
 
-    python3 - <<'EOF'
+    # Pass variables as arguments to Python script
+    python3 - "$LEARNINGS_DB" "$PATTERNS_DB" <<'EOF'
 import json
 import sys
 from datetime import datetime, timedelta
 
-learnings_file = "${LEARNINGS_DB}"
-patterns_file = "${PATTERNS_DB}"
+# Get file paths from arguments
+learnings_file = sys.argv[1]
+patterns_file = sys.argv[2]
 
 # Load learnings
 learnings = []
