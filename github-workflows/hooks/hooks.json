@@ -35,20 +35,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash github-workflows/hooks/scripts/update-board-on-merge.sh $PR_NUMBER"
+            "command": "bash \"${PLUGIN_DIR}/hooks/scripts/update-board-on-merge.sh\" \"$PR_NUMBER\""
           }
         ]
       }
     ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash github-workflows/hooks/scripts/save-workflow-state.sh"
-          }
-        ]
-      }
-    ]
+    "UserPromptSubmit": []
   }
 }
