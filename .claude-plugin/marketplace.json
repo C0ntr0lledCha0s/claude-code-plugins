@@ -19,7 +19,7 @@
       "name": "agent-builder",
       "source": "./agent-builder",
       "description": "Meta-agent plugin for building Claude Code agents, skills, slash commands, hooks, and complete plugins. Provides automated scaffolding, validation, templates, and best practices guidance. Includes comprehensive plugin creator with templates, validation scripts, and architecture guides.",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "category": "development-tools",
       "keywords": [
         "meta-agent",
