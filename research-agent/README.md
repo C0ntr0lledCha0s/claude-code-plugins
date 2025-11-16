@@ -250,6 +250,204 @@ This template provides a structured format for capturing:
 - **References**: Best practice guides, pattern catalogs, and checklists in `skills/*/references/`
 - **Assets**: Templates and diagrams in `skills/*/assets/`
 
+## Citation System
+
+The Research Agent includes a comprehensive citation system to ensure research outputs are well-sourced, traceable, and credible.
+
+### Citation Guide
+
+A complete guide for citing sources in research outputs is available at [assets/citation-guide.md](assets/citation-guide.md).
+
+**Supported Citation Types**:
+1. **Code File References**: `` `src/auth/login.ts:42-88` `` (with line numbers)
+2. **Web Resources**: Numbered citations `[1]` with URLs in References section
+3. **Package Documentation**: Package name, version, and docs URL
+4. **Code Examples**: Code blocks with source citations
+5. **Design Patterns**: Pattern name + source reference
+6. **API Endpoints**: HTTP method + path + implementation reference
+
+**Example**:
+```markdown
+The authentication logic uses JWT tokens [1] implemented in `src/auth/jwt.ts:42`.
+
+References:
+[1] JWT Best Practices - https://datatracker.ietf.org/doc/html/rfc8725
+```
+
+### Citation Template
+
+Use the [citation-template.md](assets/citation-template.md) as a starting point for creating well-cited research outputs. The template includes:
+- Structured sections for findings
+- File reference tables
+- Best practices comparison
+- Pattern identification
+- Dependency tracking
+- Complete references section
+
+### Citation Analysis
+
+Extract and analyze citations from research outputs:
+
+```bash
+python3 scripts/extract-citations.py research-output.md
+```
+
+**Features**:
+- Extract all file, web, and package citations
+- Analyze citation quality (0-100 score)
+- Validate file references exist
+- Identify code blocks with/without sources
+- Count unique domains
+- Generate citation report
+
+**Example Output**:
+```
+Citation Analysis Report
+========================================
+Total Citations: 23
+Quality Score: 87.5/100
+
+File References (12):
+  • `src/auth/login.ts:42-88`
+  • `src/middleware/csrf.ts:15-67`
+  ...
+
+Web Citations (8):
+  [1] OWASP Authentication...
+      https://owasp.org/...
+  ...
+
+✅ Citations look good!
+```
+
+## Validation & Quality Assurance
+
+The Research Agent includes comprehensive validation scripts to ensure research outputs meet quality standards. These scripts help verify completeness, accuracy, and proper evidence.
+
+### Validation Scripts
+
+Located in `scripts/`, these tools validate research output:
+
+#### 1. `validate-research.py` - Quality Standards
+Checks research output against 7 quality criteria:
+- ✓ Has summary/overview section
+- ✓ Includes file references with line numbers
+- ✓ Contains evidence or examples
+- ✓ Provides recommendations
+- ✓ Has structured sections (minimum 3)
+- ✓ Sufficient content length (200+ characters)
+- ✓ Includes citations/sources
+
+**Usage**:
+```bash
+python3 scripts/validate-research.py output/investigation-results.md
+```
+
+#### 2. `check-evidence.py` - File Reference Validation
+Validates that all file references in the research output actually exist in the codebase and that line numbers are within bounds.
+
+**Usage**:
+```bash
+python3 scripts/check-evidence.py output/investigation-results.md --codebase-dir /path/to/project
+```
+
+**Example Output**:
+```
+Found 15 file reference(s)
+  ✓ `src/auth/login.ts:42` - Valid
+  ✓ `src/middleware.ts:25-67` - Valid
+  ✗ `src/utils/helper.ts:100` - Line range 100 exceeds file length (85 lines)
+```
+
+#### 3. `assess-completeness.py` - Completeness Assessment
+Comprehensive assessment of research thoroughness with scoring across 7 dimensions:
+- Section coverage (expected sections present)
+- Evidence depth (file references, code blocks)
+- Explanation quality (word count, detail level)
+- Structural elements (organization, headings)
+- Actionability (recommendations, next steps)
+- Breadth vs depth balance
+- Technical depth (specifics, terminology)
+
+**Usage**:
+```bash
+python3 scripts/assess-completeness.py output/investigation-results.md --threshold 70
+```
+
+**Example Output**:
+```
+Overall Completeness: 85.7% - Excellent ✅
+
+Detailed Metrics:
+  • Section Coverage: 100%
+  • Evidence Items: 12 (Strong: Yes)
+  • Word Count: 1,847 (Sufficient: Yes)
+  • Organization: Well-structured
+  • Actionability: Yes
+  • Topics Covered: 8
+  • Avg Section Length: 231 words
+  • Balance: Good
+  • Technical Depth: Yes
+```
+
+#### 4. `validate-all.sh` - Comprehensive Validation
+Master validation script that runs all three validators in sequence with formatted output.
+
+**Usage**:
+```bash
+bash scripts/validate-all.sh output/investigation-results.md /path/to/project 80
+```
+
+**Arguments**:
+- `research-output-file`: Path to research markdown file
+- `codebase-dir`: Root directory of codebase (default: current directory)
+- `threshold`: Minimum completeness percentage (default: 70)
+
+**Example Output**:
+```
+╔════════════════════════════════════════════════════════════╗
+║         Research Agent - Comprehensive Validation          ║
+╚════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Test 1: Quality Standards
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Quality validation passed
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Test 2: Evidence & File References
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Evidence validation passed
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Test 3: Completeness Assessment
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Completeness assessment passed
+
+✅ All validations passed!
+```
+
+### Validation Workflow
+
+**Recommended workflow** for validating research outputs:
+
+1. **During Research**: Keep validation criteria in mind while investigating
+2. **After Research**: Run comprehensive validation:
+   ```bash
+   bash scripts/validate-all.sh my-research.md . 75
+   ```
+3. **Review Results**: Address any failures or warnings
+4. **Iterate**: Improve research based on feedback
+5. **Final Check**: Re-validate before sharing
+
+### Quality Thresholds
+
+Recommended completeness thresholds by use case:
+- **Internal exploration**: 50% (basic completeness)
+- **Team documentation**: 70% (good quality)
+- **External sharing**: 85% (excellent quality)
+- **Publication/training**: 90%+ (comprehensive)
+
 ## Usage Examples
 
 ### Example 1: Understanding Unfamiliar Code

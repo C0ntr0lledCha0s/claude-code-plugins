@@ -12,11 +12,32 @@ Automation scripts for pattern detection and analysis:
 - `architecture-mapper.py` - Visualize architectural patterns
 
 ### references/
-Comprehensive pattern catalogs:
-- `design-patterns-catalog.md` - Complete Gang of Four and modern patterns
-- `architectural-patterns.md` - System-level pattern descriptions
+Comprehensive pattern catalogs and quick references:
+
+**Primary Resources:**
+- `pattern-catalog.md` - **Comprehensive pattern encyclopedia** covering:
+  - Design Patterns (GoF): 12+ creational, structural, and behavioral patterns
+  - Architectural Patterns: MVC, MVVM, Microservices, Hexagonal, Layered, etc.
+  - Concurrency Patterns: Producer-Consumer, Circuit Breaker, Promises
+  - Data Patterns: Repository, Active Record, Data Mapper, Unit of Work
+  - API Patterns: REST, GraphQL, BFF
+  - Frontend Patterns: Component-based, Atomic Design, Container/Presenter
+  - Testing Patterns: Test Doubles, AAA, Test Pyramid
+  - Anti-Patterns: God Object, Spaghetti Code, Magic Numbers, etc.
+  - *Each pattern includes*: Purpose, identifying signatures, code examples, when to use
+
+- `pattern-quick-reference.md` - **Fast lookup guide** for rapid pattern identification:
+  - Search keywords table
+  - Grep patterns for each pattern type
+  - File structure clues
+  - Code signatures
+  - Framework-specific patterns
+  - Pattern decision tree
+  - Validation checklist
+
+**Coming Soon:**
 - `refactoring-catalog.md` - Pattern-based refactoring techniques
-- `anti-patterns.md` - Common anti-patterns and solutions
+- `framework-patterns.md` - Framework-specific pattern implementations
 
 ### assets/
 Templates for documenting pattern findings:
