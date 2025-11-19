@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${PLUGIN_DIR}/hooks/scripts/update-board-on-merge.sh\" \"$PR_NUMBER\""
+            "command": "bash -c 'PLUGIN_PATH=\"${PLUGIN_DIR//\\\\/\\/}\"; bash \"${PLUGIN_PATH}/hooks/scripts/update-board-on-merge.sh\" \"$PR_NUMBER\"'"
           }
         ]
       }
