@@ -100,8 +100,8 @@ validate_plugin() {
                 if python3 agent-builder/skills/building-commands/scripts/validate-command.py "$command" >/dev/null 2>&1; then
                     echo -e "   ${GREEN}✓${NC} Command: $command_name"
                 else
-                    echo -e "   ${YELLOW}⚠${NC}  Command: $command_name (validation warnings)"
-                    WARNINGS=$((WARNINGS + 1))
+                    echo -e "   ${RED}✗${NC} Command: $command_name (validation failed)"
+                    ERRORS=$((ERRORS + 1))
                 fi
             fi
         done

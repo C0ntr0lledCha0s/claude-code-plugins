@@ -2,7 +2,7 @@
 description: Automatically apply quality improvements to a Claude Code component based on analysis
 allowed-tools: Read, Edit, Bash
 argument-hint: "<component-path>"
-model: sonnet
+model: claude-sonnet-4-5
 ---
 
 # Improve Component Quality

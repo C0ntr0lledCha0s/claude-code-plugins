@@ -2,7 +2,7 @@
 description: Analyze the quality of a Claude Code component (agent, skill, command, hook) with detailed scores and improvement suggestions
 allowed-tools: Read, Bash
 argument-hint: "<component-path>"
-model: sonnet
+model: claude-sonnet-4-5
 ---
 
 # Analyze Component Quality
