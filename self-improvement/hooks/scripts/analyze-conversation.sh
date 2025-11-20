@@ -137,8 +137,17 @@ analyze_transcript() {
     analyze_security "${temp_text}"
     analyze_sentiment "${temp_text}"
 
-    # Store metrics
-    store_session_metrics "${total_turns}" "${user_turns}" "${assistant_turns}" "${total_lines}"
+    # Run real code analysis if available
+    local code_analysis_result=""
+    if [[ -f "${SCRIPT_DIR}/analyze-code-quality.py" ]]; then
+        code_analysis_result=$(python3 "${SCRIPT_DIR}/analyze-code-quality.py" "${temp_text}" 2>/dev/null || echo "")
+        if [[ -n "${code_analysis_result}" ]]; then
+            process_code_analysis "${code_analysis_result}"
+        fi
+    fi
+
+    # Store metrics with quality indicators
+    store_session_metrics "${total_turns}" "${user_turns}" "${assistant_turns}" "${total_lines}" "${code_analysis_result}"
 
     # Clean up temp file
     rm -f "${temp_text}"
@@ -220,6 +229,116 @@ analyze_errors() {
     fi
 
     debug_log "=== analyze_errors completed ==="
+}
+
+# Process results from real code analysis
+process_code_analysis() {
+    local analysis_json="$1"
+
+    log_analysis "--- Deep Code Analysis ---"
+
+    # Parse the analysis results using Python
+    python3 - "$analysis_json" "$TIMESTAMP" "$PATTERNS_DB" "$LEARNINGS_DB" <<'EOF'
+import json
+import sys
+
+analysis_json = sys.argv[1]
+timestamp = sys.argv[2]
+patterns_file = sys.argv[3]
+learnings_file = sys.argv[4]
+
+try:
+    analysis = json.loads(analysis_json)
+except json.JSONDecodeError:
+    sys.exit(0)
+
+issues = analysis.get('issues', [])
+patterns = analysis.get('patterns', [])
+learnings = analysis.get('learnings', [])
+metrics = analysis.get('metrics', {})
+
+# Log summary
+critical = sum(1 for i in issues if i.get('severity') == 'critical')
+important = sum(1 for i in issues if i.get('severity') == 'important')
+print(f"Code analysis: {critical} critical, {important} important issues in {metrics.get('total_code_blocks', 0)} blocks")
+
+# Track patterns from analysis
+if patterns:
+    try:
+        with open(patterns_file, 'r+') as f:
+            try:
+                data = json.load(f)
+            except:
+                data = {"patterns": []}
+
+            for pattern in patterns:
+                pattern_type = pattern.get('type', '')
+                if not pattern_type:
+                    continue
+
+                # Find existing or create new
+                existing = next((p for p in data['patterns'] if p['type'] == pattern_type), None)
+                if existing:
+                    existing['count'] = existing.get('count', 0) + 1
+                    existing['last_seen'] = timestamp
+                    existing['severity'] = pattern.get('severity', existing.get('severity', 'minor'))
+                    existing['description'] = pattern.get('description', existing.get('description', ''))
+                else:
+                    data['patterns'].append({
+                        'type': pattern_type,
+                        'description': pattern.get('description', ''),
+                        'severity': pattern.get('severity', 'minor'),
+                        'count': 1,
+                        'first_seen': timestamp,
+                        'last_seen': timestamp
+                    })
+
+            f.seek(0)
+            f.truncate()
+            json.dump(data, f, indent=2)
+    except Exception as e:
+        print(f"Error tracking patterns: {e}", file=sys.stderr)
+
+# Track learnings from analysis
+if learnings:
+    try:
+        with open(learnings_file, 'r+') as f:
+            try:
+                data = json.load(f)
+            except:
+                data = {"learnings": []}
+
+            for learning in learnings:
+                key = learning.get('key', '')
+                text = learning.get('text', '')
+                if not key or not text:
+                    continue
+
+                # Find existing or create new
+                existing = next((l for l in data['learnings'] if l['key'] == key), None)
+                if existing:
+                    existing['reinforced_count'] = existing.get('reinforced_count', 0) + 1
+                    existing['last_reinforced'] = timestamp
+                    existing['text'] = text
+                else:
+                    data['learnings'].append({
+                        'key': key,
+                        'text': text,
+                        'learned_at': timestamp,
+                        'reinforced_count': 0
+                    })
+
+            f.seek(0)
+            f.truncate()
+            json.dump(data, f, indent=2)
+    except Exception as e:
+        print(f"Error tracking learnings: {e}", file=sys.stderr)
+
+EOF
+
+    local output
+    output=$(python3 - "$analysis_json" 2>&1)
+    log_analysis "${output}"
 }
 
 # Analyze security considerations
@@ -393,15 +512,16 @@ except Exception as e:
 EOF
 }
 
-# Store session metrics
+# Store session metrics with quality indicators
 store_session_metrics() {
     local total_turns="$1"
     local user_turns="$2"
     local assistant_turns="$3"
     local total_lines="$4"
+    local code_analysis="${5:-}"
 
-    # Update metrics database using Python
-    python3 - "$SESSION_ID" "$TIMESTAMP" "$total_turns" "$user_turns" "$assistant_turns" "$total_lines" "$METRICS_DB" <<'EOF'
+    # Update metrics database using Python with quality indicators
+    python3 - "$SESSION_ID" "$TIMESTAMP" "$total_turns" "$user_turns" "$assistant_turns" "$total_lines" "$code_analysis" "$METRICS_DB" "$PATTERNS_DB" <<'EOF'
 import json
 import sys
 
@@ -412,7 +532,61 @@ total_turns = int(sys.argv[3])
 user_turns = int(sys.argv[4])
 assistant_turns = int(sys.argv[5])
 total_lines = int(sys.argv[6])
-metrics_file = sys.argv[7]
+code_analysis_json = sys.argv[7] if len(sys.argv) > 7 else ""
+metrics_file = sys.argv[8]
+patterns_file = sys.argv[9]
+
+# Parse code analysis if available
+quality_metrics = {
+    "code_blocks_analyzed": 0,
+    "critical_issues": 0,
+    "important_issues": 0,
+    "minor_issues": 0,
+    "security_issues": 0,
+    "quality_score": 100  # Start with perfect, deduct for issues
+}
+
+if code_analysis_json:
+    try:
+        analysis = json.loads(code_analysis_json)
+        metrics = analysis.get('metrics', {})
+        issues = analysis.get('issues', [])
+
+        quality_metrics["code_blocks_analyzed"] = metrics.get('total_code_blocks', 0)
+
+        for issue in issues:
+            severity = issue.get('severity', 'minor')
+            issue_type = issue.get('type', '')
+
+            if severity == 'critical':
+                quality_metrics["critical_issues"] += 1
+                quality_metrics["quality_score"] -= 15
+            elif severity == 'important':
+                quality_metrics["important_issues"] += 1
+                quality_metrics["quality_score"] -= 5
+            else:
+                quality_metrics["minor_issues"] += 1
+                quality_metrics["quality_score"] -= 1
+
+            # Track security-specific issues
+            if any(sec in issue_type for sec in ['eval', 'injection', 'xss', 'secret', 'security']):
+                quality_metrics["security_issues"] += 1
+
+        # Ensure score doesn't go negative
+        quality_metrics["quality_score"] = max(0, quality_metrics["quality_score"])
+    except:
+        pass
+
+# Count patterns detected in this session
+patterns_detected = 0
+try:
+    with open(patterns_file, 'r') as f:
+        patterns_data = json.load(f)
+        for pattern in patterns_data.get('patterns', []):
+            if pattern.get('last_seen', '').startswith(timestamp[:10]):
+                patterns_detected += 1
+except:
+    pass
 
 try:
     with open(metrics_file, 'r+') as f:
@@ -422,14 +596,26 @@ try:
         except (json.JSONDecodeError, ValueError):
             data = {"sessions": []}
 
-        data['sessions'].append({
+        # Store comprehensive metrics
+        session_data = {
             'session_id': session_id,
             'timestamp': timestamp,
+            # Activity metrics (less useful but kept for reference)
             'total_turns': total_turns,
             'user_turns': user_turns,
             'assistant_turns': assistant_turns,
-            'total_lines': total_lines
-        })
+            'total_lines': total_lines,
+            # Quality metrics (meaningful indicators)
+            'quality_score': quality_metrics["quality_score"],
+            'code_blocks_analyzed': quality_metrics["code_blocks_analyzed"],
+            'critical_issues': quality_metrics["critical_issues"],
+            'important_issues': quality_metrics["important_issues"],
+            'minor_issues': quality_metrics["minor_issues"],
+            'security_issues': quality_metrics["security_issues"],
+            'patterns_detected': patterns_detected
+        }
+
+        data['sessions'].append(session_data)
 
         # Keep only last 100 sessions
         if len(data['sessions']) > 100:
