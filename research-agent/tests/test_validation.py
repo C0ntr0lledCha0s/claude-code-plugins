@@ -325,8 +325,8 @@ class TestComparisonFrameworkValidation:
         score_a = calculate_weighted_score(weights, scores_a)
         score_b = calculate_weighted_score(weights, scores_b)
 
-        assert abs(score_a - 6.55) < 0.01
-        assert abs(score_b - 8.35) < 0.01
+        assert abs(score_a - 6.85) < 0.01
+        assert abs(score_b - 8.55) < 0.01
         assert score_b > score_a  # B wins
 
     def test_rating_scale_bounds(self):

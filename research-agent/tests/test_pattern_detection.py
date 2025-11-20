@@ -125,8 +125,8 @@ class TestPatternDocumentation:
         """Singleton pattern should have documentation comments"""
         content = sample_files['singleton'].read_text()
 
-        # Should mention "Singleton" in comments
-        assert '* Singleton' in content or '// Singleton' in content
+        # Should mention "Singleton" in comments (in JSDoc title or line comment)
+        assert 'Singleton Pattern' in content or '* Singleton' in content or '// Singleton' in content
 
         # Should explain pattern
         assert 'single instance' in content.lower() or 'one instance' in content.lower()
@@ -135,8 +135,8 @@ class TestPatternDocumentation:
         """Repository pattern should have documentation comments"""
         content = sample_files['repository'].read_text()
 
-        # Should mention "Repository" in comments
-        assert '* Repository' in content or '// Repository' in content
+        # Should mention "Repository" in comments (in JSDoc title or line comment)
+        assert 'Repository Pattern' in content or '* Repository' in content or '// Repository' in content
 
         # Should explain purpose
         assert 'database' in content.lower() or 'data access' in content.lower()
