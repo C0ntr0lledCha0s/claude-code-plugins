@@ -192,7 +192,8 @@ def score_usability(frontmatter: Dict, content: str) -> Tuple[int, List[str]]:
 
 def determine_component_type(file_path: Path) -> str:
     """Determine component type from file path."""
-    path_str = str(file_path)
+    # Normalize path separators for cross-platform compatibility
+    path_str = str(file_path).replace('\\', '/')
 
     if '/agents/' in path_str:
         return 'agent'
