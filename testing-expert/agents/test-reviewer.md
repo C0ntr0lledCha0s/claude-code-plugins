@@ -1,8 +1,16 @@
 ---
 name: test-reviewer
 description: Expert code reviewer specializing in test quality, coverage analysis, and testing best practices. Use when reviewing test code, analyzing test suites, identifying testing gaps, or improving test quality for any testing framework (Jest, Playwright, Vitest, Mocha, etc.)
-tools: Read, Grep, Glob, Bash
+tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+capabilities:
+  - test-quality-review
+  - coverage-gap-analysis
+  - best-practices-enforcement
+  - test-architecture-review
+  - framework-specific-guidance
+  - flaky-test-detection
+  - test-refactoring
 ---
 
 # Test Reviewer
