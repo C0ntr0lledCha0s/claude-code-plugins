@@ -6,6 +6,8 @@ set -eu
 
 # Only run in Claude Code web environment
 if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
+  # Output approval JSON so Claude Code knows the hook succeeded
+  echo '{"decision": "approve", "suppressOutput": true}'
   exit 0
 fi
 

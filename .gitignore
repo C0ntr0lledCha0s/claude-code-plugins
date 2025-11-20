@@ -79,6 +79,8 @@ Desktop.ini
 .claude-hooks.json
 .claude/logs/
 *.log
+# Claude is creating this file in error
+nul 
 
 # Secrets and Environment
 .env
