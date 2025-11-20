@@ -6,8 +6,22 @@ echo ""
 
 ERRORS=0
 
+# Dynamically discover plugins by finding directories with .claude-plugin/plugin.json
+PLUGINS=()
+for plugin_json in */.claude-plugin/plugin.json; do
+    if [ -f "$plugin_json" ]; then
+        plugin_dir=$(dirname "$(dirname "$plugin_json")")
+        PLUGINS+=("$plugin_dir")
+    fi
+done
+
+if [ ${#PLUGINS[@]} -eq 0 ]; then
+    echo "No plugins found!"
+    exit 1
+fi
+
 # Validate each plugin's hooks
-for plugin in agent-builder self-improvement github-workflows; do
+for plugin in "${PLUGINS[@]}"; do
     echo "Checking $plugin..."
 
     # Validate hooks if they exist

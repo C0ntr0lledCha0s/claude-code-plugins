@@ -52,6 +52,7 @@ def validate_hooks(file_path: str) -> tuple[bool, list[str]]:
         'UserPromptSubmit',
         'Stop',
         'SessionStart',
+        'SessionEnd',
         'Notification',
         'SubagentStop',
         'PreCompact'
@@ -65,6 +66,7 @@ def validate_hooks(file_path: str) -> tuple[bool, list[str]]:
         'UserPromptSubmit',
         'Stop',
         'SessionStart',
+        'SessionEnd',
         'Notification',
         'SubagentStop',
         'PreCompact'
