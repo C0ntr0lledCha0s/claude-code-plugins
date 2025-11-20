@@ -110,5 +110,6 @@ EOF
 }
 
 # Main execution
-load_learnings
+# Strip Windows CRLF from Python output to ensure clean JSON
+load_learnings | tr -d '\r'
 exit 0

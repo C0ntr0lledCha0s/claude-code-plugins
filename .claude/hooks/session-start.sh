@@ -17,9 +17,10 @@ output_json_and_exit() {
   local decision="$1"
   local message="${2:-}"
   if [ -n "$message" ]; then
-    echo "{\"decision\": \"$decision\", \"reason\": \"$message\"}"
+    # Use printf and tr to avoid CRLF issues on Windows
+    printf '{"decision": "%s", "reason": "%s"}\n' "$decision" "$message" | tr -d '\r'
   else
-    echo "{\"decision\": \"$decision\"}"
+    printf '{"decision": "%s"}\n' "$decision" | tr -d '\r'
   fi
   exit 0
 }

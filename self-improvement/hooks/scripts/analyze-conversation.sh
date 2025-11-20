@@ -70,22 +70,30 @@ log_analysis() {
     debug_log "ANALYSIS: $*"
 }
 
-# Check for jq availability
-check_jq() {
-    if ! command -v jq &> /dev/null; then
-        debug_log "ERROR: jq not found - required for JSON parsing"
-        echo '{"continue": true}'
+# Check for Python availability (jq no longer required - using Python for JSON)
+check_python() {
+    if ! command -v python3 &> /dev/null; then
+        debug_log "ERROR: python3 not found - required for analysis"
+        echo '{"decision": "approve", "suppressOutput": true}'
         exit 0
     fi
 }
 
-# Check for Python availability
-check_python() {
-    if ! command -v python3 &> /dev/null; then
-        debug_log "ERROR: python3 not found - required for analysis"
-        echo '{"continue": true}'
-        exit 0
-    fi
+# Parse JSON using Python (replaces jq dependency)
+parse_json_field() {
+    local json_str="$1"
+    local field="$2"
+    # Use tr -d '\r' to strip Windows CRLF from Python output
+    python3 -c "
+import json
+import sys
+try:
+    data = json.loads('''$json_str''')
+    value = data.get('$field', '')
+    print(value if value else '')
+except:
+    print('')
+" 2>/dev/null | tr -d '\r'
 }
 
 debug_log "Initializing databases..."
@@ -143,11 +151,11 @@ analyze_keywords() {
     debug_log "=== analyze_keywords started ==="
     log_analysis "--- Keyword Analysis ---"
 
-    local bug_count=$(grep -ci "bug\|broken\|failing" "${file}" 2>/dev/null || echo "0")
-    local error_count=$(grep -ci "error" "${file}" 2>/dev/null || echo "0")
-    local security_count=$(grep -ci "injection\|xss\|csrf\|vulnerability\|security\|exploit\|attack\|malicious" "${file}" 2>/dev/null || echo "0")
-    local quality_count=$(grep -ci "quality\|review\|improve\|optimize\|refactor" "${file}" 2>/dev/null || echo "0")
-    local help_count=$(grep -ci "how do\|how to\|can you\|please help\|what is\|explain" "${file}" 2>/dev/null || echo "0")
+    local bug_count=$(grep -ci "bug\|broken\|failing" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
+    local error_count=$(grep -ci "error" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
+    local security_count=$(grep -ci "injection\|xss\|csrf\|vulnerability\|security\|exploit\|attack\|malicious" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
+    local quality_count=$(grep -ci "quality\|review\|improve\|optimize\|refactor" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
+    local help_count=$(grep -ci "how do\|how to\|can you\|please help\|what is\|explain" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
 
     debug_log "Keyword counts: bugs=${bug_count}, errors=${error_count}, security=${security_count}, quality=${quality_count}, help=${help_count}"
     log_analysis "Keywords: bugs=${bug_count}, errors=${error_count}, security=${security_count}, quality=${quality_count}, help_requests=${help_count}"
@@ -172,13 +180,13 @@ analyze_code_quality() {
     log_analysis "--- Code Quality Analysis ---"
 
     # Look for code blocks
-    local code_blocks=$(grep -c '```' "${file}" 2>/dev/null || echo "0")
+    local code_blocks=$(grep -c '```' "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
     code_blocks=$((code_blocks / 2))  # Divide by 2 since each block has opening and closing
 
     # Quality indicators
-    local test_mentions=$(grep -ci "test\|spec\|unittest\|pytest\|jest" "${file}" 2>/dev/null || echo "0")
-    local validation_mentions=$(grep -ci "validat\|sanitiz\|check\|verify" "${file}" 2>/dev/null || echo "0")
-    local error_handling=$(grep -ci "try\|catch\|except\|error handling" "${file}" 2>/dev/null || echo "0")
+    local test_mentions=$(grep -ci "test\|spec\|unittest\|pytest\|jest" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
+    local validation_mentions=$(grep -ci "validat\|sanitiz\|check\|verify" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
+    local error_handling=$(grep -ci "try\|catch\|except\|error handling" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
 
     log_analysis "Code Quality: ${code_blocks} code blocks, tests=${test_mentions}, validation=${validation_mentions}, error_handling=${error_handling}"
 
@@ -199,9 +207,9 @@ analyze_errors() {
     debug_log "=== analyze_errors started ==="
     log_analysis "--- Error Analysis ---"
 
-    local syntax_errors=$(grep -ci "syntax error\|SyntaxError\|parse error\|ParseError\|unexpected token" "${file}" 2>/dev/null || echo "0")
-    local runtime_errors=$(grep -ci "runtime error\|RuntimeError\|exception\|traceback\|stack trace" "${file}" 2>/dev/null || echo "0")
-    local logic_errors=$(grep -ci "logic error\|incorrect\|not working" "${file}" 2>/dev/null || echo "0")
+    local syntax_errors=$(grep -ci "syntax error\|SyntaxError\|parse error\|ParseError\|unexpected token" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
+    local runtime_errors=$(grep -ci "runtime error\|RuntimeError\|exception\|traceback\|stack trace" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
+    local logic_errors=$(grep -ci "logic error\|incorrect\|not working" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
 
     debug_log "Error counts: syntax=${syntax_errors}, runtime=${runtime_errors}, logic=${logic_errors}"
     log_analysis "Errors: syntax=${syntax_errors}, runtime=${runtime_errors}, logic=${logic_errors}"
@@ -221,10 +229,10 @@ analyze_security() {
     log_analysis "--- Security Analysis ---"
 
     # Security issue indicators
-    local sql_injection=$(grep -ci "sql injection\|parameterized query\|prepared statement" "${file}" 2>/dev/null || echo "0")
-    local xss=$(grep -ci "xss\|cross-site scripting\|sanitize.*html\|escape.*html" "${file}" 2>/dev/null || echo "0")
-    local auth_issues=$(grep -ci "authentication\|authorization\|access control\|permission" "${file}" 2>/dev/null || echo "0")
-    local secret_exposure=$(grep -ci "api key\|password\|secret\|credential\|token" "${file}" 2>/dev/null || echo "0")
+    local sql_injection=$(grep -ci "sql injection\|parameterized query\|prepared statement" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
+    local xss=$(grep -ci "xss\|cross-site scripting\|sanitize.*html\|escape.*html" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
+    local auth_issues=$(grep -ci "authentication\|authorization\|access control\|permission" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
+    local secret_exposure=$(grep -ci "api key\|password\|secret\|credential\|token" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
 
     log_analysis "Security: sql_injection=${sql_injection}, xss=${xss}, auth=${auth_issues}, secrets=${secret_exposure}"
 
@@ -245,9 +253,9 @@ analyze_sentiment() {
     debug_log "=== analyze_sentiment started ==="
     log_analysis "--- Sentiment Analysis ---"
 
-    local positive=$(grep -ci "thanks\|thank you\|great\|perfect\|excellent\|awesome\|helpful\|works great\|working well" "${file}" 2>/dev/null || echo "0")
-    local negative=$(grep -ci "wrong\|incorrect\|not working\|confused\|unclear\|frustrated" "${file}" 2>/dev/null || echo "0")
-    local confusion=$(grep -ci "don't understand\|unclear\|confused\|what do you mean\|can you explain\|not sure" "${file}" 2>/dev/null || echo "0")
+    local positive=$(grep -ci "thanks\|thank you\|great\|perfect\|excellent\|awesome\|helpful\|works great\|working well" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
+    local negative=$(grep -ci "wrong\|incorrect\|not working\|confused\|unclear\|frustrated" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
+    local confusion=$(grep -ci "don't understand\|unclear\|confused\|what do you mean\|can you explain\|not sure" "${file}" 2>/dev/null | tr -d '[:space:]' || echo "0")
 
     debug_log "Sentiment counts: positive=${positive}, negative=${negative}, confusion=${confusion}"
     log_analysis "Sentiment: positive=${positive}, negative=${negative}, confusion=${confusion}"
@@ -443,7 +451,6 @@ main() {
     debug_log "=== main() started ==="
 
     # Check dependencies
-    check_jq
     check_python
 
     # Read hook payload from stdin
@@ -455,15 +462,15 @@ main() {
     if [[ -z "${payload}" ]]; then
         debug_log "ERROR: Empty payload received"
         log_analysis "ERROR: Empty payload received from hook"
-        echo '{"continue": true}'
+        echo '{"decision": "approve", "suppressOutput": true}'
         exit 0
     fi
 
-    # Extract fields from payload
+    # Extract fields from payload using Python (no jq dependency)
     local transcript_path
-    transcript_path=$(echo "${payload}" | jq -r '.transcript_path // empty' 2>/dev/null)
+    transcript_path=$(parse_json_field "$payload" "transcript_path")
 
-    SESSION_ID=$(echo "${payload}" | jq -r '.session_id // empty' 2>/dev/null)
+    SESSION_ID=$(parse_json_field "$payload" "session_id")
 
     if [[ -z "${SESSION_ID}" ]]; then
         SESSION_ID=$(date +%s)
@@ -475,14 +482,14 @@ main() {
     if [[ -z "${transcript_path}" ]]; then
         debug_log "ERROR: No transcript_path in payload"
         log_analysis "ERROR: No transcript_path in hook payload"
-        echo '{"continue": true}'
+        echo '{"decision": "approve", "suppressOutput": true}'
         exit 0
     fi
 
     if [[ ! -f "${transcript_path}" ]]; then
         debug_log "ERROR: Transcript file not found: ${transcript_path}"
         log_analysis "ERROR: Transcript file not found: ${transcript_path}"
-        echo '{"continue": true}'
+        echo '{"decision": "approve", "suppressOutput": true}'
         exit 0
     fi
 
@@ -499,7 +506,7 @@ main() {
     fi
 
     # Return success - allow session to end
-    echo '{"continue": true}'
+    echo '{"decision": "approve", "suppressOutput": true}'
 
     debug_log "=== main() completed ==="
     exit 0
