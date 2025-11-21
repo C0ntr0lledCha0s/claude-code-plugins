@@ -24,17 +24,55 @@ When this command is invoked with `/testing-expert:analyze-coverage [path]`:
    - Parse coverage summary
    - Identify coverage tool (Istanbul/nyc, c8, Jest)
 
+   **Search patterns**:
+   ```bash
+   # Find coverage files
+   find . -name "lcov.info" -o -name "coverage-final.json" -o -name "coverage-summary.json" 2>/dev/null
+   ```
+
 2. **Analyze Metrics**
    - Statement coverage
    - Branch coverage
    - Function coverage
    - Line coverage
 
+   **Parsing lcov.info**:
+   ```bash
+   # Extract per-file summaries
+   grep -E "^(SF|LF|LH|BRF|BRH|FNF|FNH):" coverage/lcov.info
+
+   # SF: Source File
+   # LF/LH: Lines Found/Hit
+   # BRF/BRH: Branches Found/Hit
+   # FNF/FNH: Functions Found/Hit
+   ```
+
+   **Parsing coverage-summary.json**:
+   ```bash
+   # Read summary metrics
+   cat coverage/coverage-summary.json | jq '.total'
+   ```
+
 3. **Identify Gaps**
    - Uncovered functions
    - Uncovered branches
    - Complex uncovered code
    - Critical path gaps
+
+   **Finding uncovered lines in lcov**:
+   ```bash
+   # Extract uncovered line ranges (DA:line,0 means uncovered)
+   grep "^DA:" coverage/lcov.info | grep ",0$"
+
+   # Find uncovered functions (FNDA:0,funcName)
+   grep "^FNDA:0," coverage/lcov.info
+   ```
+
+   **Parsing coverage-final.json for uncovered**:
+   ```bash
+   # Find files with < 80% line coverage
+   cat coverage/coverage-final.json | jq 'to_entries | .[] | select(.value.s | to_entries | map(select(.value == 0)) | length > 0) | .key'
+   ```
 
 4. **Prioritize by Risk**
    - Error handling code

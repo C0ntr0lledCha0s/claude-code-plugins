@@ -37,6 +37,30 @@ When this command is invoked with `/testing-expert:review-tests [path]`:
    - Reliability: Async handling, isolation, determinism
    - Maintainability: DRY, readability, helpers
 
+   **Anti-pattern detection patterns**:
+   ```bash
+   # Detect potential flaky tests (timing issues)
+   grep -r "setTimeout\|sleep\|delay" --include="*.test.*" --include="*.spec.*"
+
+   # Detect shared mutable state
+   grep -r "let \w\+ =" --include="*.test.*" | grep -v "beforeEach\|beforeAll"
+
+   # Detect missing assertions (empty test bodies)
+   grep -r "it('\|test('" --include="*.test.*" -A 3 | grep -B 1 "});"
+
+   # Detect nested callbacks (potential async issues)
+   grep -r "\.then(.*\.then(" --include="*.test.*"
+
+   # Detect hardcoded timeouts
+   grep -r "timeout: [0-9]" --include="*.test.*" --include="*.spec.*"
+   ```
+
+   **Quality metrics to calculate**:
+   - Test-to-code ratio: `find src -name "*.ts" | wc -l` vs test files
+   - Average assertions per test
+   - describe/it nesting depth
+   - Setup/teardown usage
+
 4. **Generate Report**
    ```markdown
    ## Test Review Summary

@@ -36,6 +36,30 @@ When this command is invoked with `/testing-expert:suggest-tests <file>`:
    - Edge cases
    - Dependencies
 
+   **Code analysis patterns**:
+   ```bash
+   # Find exported functions
+   grep -E "^export (async )?(function|const|class)" $1
+
+   # Find error handling that needs testing
+   grep -E "throw new|catch \(|\.catch\(" $1
+
+   # Find conditionals (branches to test)
+   grep -E "if \(|switch \(|\? .* :" $1 | wc -l
+
+   # Find async operations
+   grep -E "async |await |Promise|\.then\(" $1
+
+   # Find external dependencies to mock
+   grep -E "^import .* from ['\"](?!\.)" $1
+   ```
+
+   **Complexity indicators**:
+   - Function parameters (more = more test cases)
+   - Conditional statements (branches)
+   - Try-catch blocks (error scenarios)
+   - Loops (boundary conditions)
+
 4. **Generate Test Cases**
    For each testable unit:
    - Happy path scenarios
