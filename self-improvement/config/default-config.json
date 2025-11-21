@@ -1,0 +1,37 @@
+{
+  "$schema": "config-schema.json",
+  "version": "1.0.0",
+  "description": "Self-improvement plugin configuration",
+
+  "enforcement": {
+    "critical_issues": "warn",
+    "important_issues": "warn",
+    "repeated_ignores": "warn",
+    "require_confirmation_after": 3
+  },
+
+  "analysis": {
+    "python_ast_parsing": true,
+    "javascript_eslint": false,
+    "shell_shellcheck": false
+  },
+
+  "tracking": {
+    "compliance_enabled": true,
+    "warning_followup_enabled": true,
+    "max_sessions_stored": 100,
+    "max_warnings_stored": 50
+  },
+
+  "context": {
+    "max_patterns_shown": 3,
+    "include_templates": true,
+    "template_max_lines": 15
+  },
+
+  "notifications": {
+    "show_compliance_rate": true,
+    "show_improvement_trends": true,
+    "celebrate_improvements": true
+  }
+}
