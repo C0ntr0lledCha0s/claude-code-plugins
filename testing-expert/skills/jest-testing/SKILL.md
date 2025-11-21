@@ -1,6 +1,6 @@
 ---
 name: jest-testing
-description: Automatically activated when user works with Jest tests, mentions Jest configuration, asks about Jest matchers/mocks, or has files matching *.test.js, *.test.ts, jest.config.*. Provides Jest-specific expertise for testing React, Node.js, and JavaScript applications. Does NOT handle general quality analysis - use analyzing-test-quality for that.
+description: Automatically activated when user works with Jest tests, mentions Jest configuration, asks about Jest matchers/mocks, or has files matching *.test.js, *.test.ts, jest.config.*. Provides Jest-specific expertise for testing React, Node.js, and JavaScript applications. Also applies to Vitest due to API compatibility. Does NOT handle general quality analysis - use analyzing-test-quality for that.
 version: 1.1.0
 allowed-tools: Read, Grep, Glob, Bash
 capabilities:
@@ -52,6 +52,14 @@ Use `{baseDir}` to reference files in this skill directory:
 1. Start with core Jest expertise
 2. Reference specific documentation as needed
 3. Provide code examples from templates
+
+## Available Resources
+
+This skill includes ready-to-use resources in `{baseDir}`:
+
+- **references/jest-cheatsheet.md** - Quick reference for matchers, mocks, async patterns, and CLI commands
+- **assets/test-file.template.ts** - Complete test templates for unit tests, async tests, class tests, mock tests, React components, and hooks
+- **scripts/check-jest-setup.sh** - Validates Jest configuration and dependencies
 
 ## Jest Best Practices
 
@@ -623,6 +631,41 @@ When testing code that makes API calls:
 2. Test success and error scenarios
 3. Verify request parameters
 4. Test loading states
+
+## Version Compatibility
+
+The patterns in this skill require the following minimum versions:
+
+| Package | Minimum Version | Features Used |
+|---------|----------------|---------------|
+| Jest | 29.0+ | Modern mock APIs, ESM support |
+| @testing-library/react | 14.0+ | renderHook in main package |
+| @testing-library/user-event | 14.0+ | userEvent.setup() API |
+| msw | 2.0+ | http, HttpResponse (v1 used rest, ctx) |
+| @testing-library/jest-dom | 6.0+ | Modern matchers |
+
+### Migration Notes
+
+**MSW v1 → v2**:
+```typescript
+// v1 (deprecated)
+import { rest } from 'msw';
+rest.get('/api', (req, res, ctx) => res(ctx.json(data)));
+
+// v2 (current)
+import { http, HttpResponse } from 'msw';
+http.get('/api', () => HttpResponse.json(data));
+```
+
+**user-event v13 → v14**:
+```typescript
+// v13 (deprecated)
+userEvent.click(button);
+
+// v14 (current)
+const user = userEvent.setup();
+await user.click(button);
+```
 
 ## Important Notes
 

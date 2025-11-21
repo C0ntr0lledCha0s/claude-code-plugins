@@ -45,6 +45,14 @@ Use `{baseDir}` to reference files in this skill directory:
 - Documentation: `{baseDir}/references/`
 - Templates: `{baseDir}/assets/`
 
+## Available Resources
+
+This skill includes ready-to-use resources in `{baseDir}`:
+
+- **references/quality-checklist.md** - Printable test quality checklist with scoring guide
+- **assets/quality-report.template.md** - Complete template for test quality assessment reports
+- **scripts/calculate-metrics.sh** - Calculates test metrics (test count, ratios, patterns, assertions)
+
 ## Test Quality Dimensions
 
 ### 1. Correctness

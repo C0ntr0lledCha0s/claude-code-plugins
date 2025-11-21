@@ -47,6 +47,14 @@ Use `{baseDir}` to reference files in this skill directory:
 - Documentation: `{baseDir}/references/`
 - Templates: `{baseDir}/assets/`
 
+## Available Resources
+
+This skill includes ready-to-use resources in `{baseDir}`:
+
+- **references/playwright-cheatsheet.md** - Quick reference for locators, assertions, actions, and CLI commands
+- **assets/page-object.template.ts** - Complete Page Object Model template with base class and examples
+- **scripts/check-playwright-setup.sh** - Validates Playwright configuration and browser installation
+
 ## Playwright Best Practices
 
 ### Test Structure
@@ -497,6 +505,36 @@ When testing tables/lists:
 2. Filter by content with `.filter()`
 3. Chain to find actions within rows
 4. Assert on row count or content
+
+## Version Compatibility
+
+The patterns in this skill require the following minimum versions:
+
+| Feature | Minimum Version | Notes |
+|---------|----------------|-------|
+| getByRole with name | 1.27+ | Role-based locators with accessible name |
+| toHaveScreenshot | 1.22+ | Visual regression testing |
+| storageState | 1.13+ | Authentication state persistence |
+| @axe-core/playwright | 4.7+ | Accessibility testing integration |
+| route.fulfill | 1.0+ | Network mocking (stable) |
+| test.describe.configure | 1.24+ | Parallel/serial test configuration |
+
+### Feature Detection
+
+Check your Playwright version:
+```bash
+npx playwright --version
+```
+
+### Upgrading
+
+```bash
+# Update Playwright
+npm install -D @playwright/test@latest
+
+# Update browsers
+npx playwright install
+```
 
 ## Important Notes
 
