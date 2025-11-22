@@ -60,7 +60,9 @@ Creates `.claude/github-workflows/env.json`:
   },
   "branch": {
     "name": "feature/issue-42",
-    "relatedIssue": 42
+    "relatedIssues": [42],
+    "detectedScope": "auth",
+    "scopeLabel": "scope:auth"
   },
   "issueCache": {
     "count": 5,
@@ -213,7 +215,8 @@ When this command is invoked:
    User: username
    Project Board: Sprint 5 (#1)
    Current Milestone: Sprint 5 (due Jan 31)
-   Current Branch: feature/issue-42 → Issue #42
+   Current Branch: feature/issue-42 → Issues #42
+     Detected scope: auth (scope:auth)
 
    📋 Label Stocktake:
      Existing: 15 labels
@@ -312,7 +315,9 @@ After initialization, these are available in `env.json`:
 | `user.login` | GitHub username | `developer` |
 | `projectBoard.number` | Active project ID | `5` |
 | `milestone.title` | Current milestone | `Sprint 5` |
-| `branch.relatedIssue` | Issue for current branch | `42` |
+| `branch.relatedIssues` | Issues selected for current branch | `[42, 43]` |
+| `branch.detectedScope` | Scope detected from branch name | `"auth"` |
+| `branch.scopeLabel` | Label matching detected scope | `"scope:auth"` |
 | `labels.existing` | Count of existing labels | `15` |
 | `labels.missing` | List of missing standard labels | `["priority:high"]` |
 | `labels.suggestedScopes` | Scope labels suggested from project analysis | `["agent-builder"]` |
