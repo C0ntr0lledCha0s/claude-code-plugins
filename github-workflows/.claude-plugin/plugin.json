@@ -1,6 +1,6 @@
 {
   "name": "github-workflows",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Comprehensive GitHub workflow automation including project boards, labels, milestones, commits, issues, and pull requests. Features automatic issue tracking, commit integration, milestone management with progress tracking, and session environment setup. Optional integration with self-improvement plugin for enhanced PR reviews and quality gates.",
   "author": {
     "name": "C0ntr0lledCha0s",
@@ -31,6 +31,8 @@
   ],
   "agents": [
     "./agents/workflow-orchestrator.md",
-    "./agents/pr-reviewer.md"
+    "./agents/pr-reviewer.md",
+    "./agents/issue-manager.md",
+    "./agents/release-manager.md"
   ]
 }
