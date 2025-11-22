@@ -19,6 +19,10 @@ Synchronize GitHub issues to a local cache and display them as trackable tasks. 
 /issue-track project "Agent Plugin Development"  # Sync issues in project board (by title)
 /issue-track project 3          # Sync issues in project board (by number)
 /issue-track all                # Sync all open issues
+/issue-track context            # Show issues filtered by context (project + scope + assignment)
+/issue-track scope              # Show issues matching branch scope
+/issue-track branch             # Show only issues selected for current branch
+/issue-track select 42 43       # Select issues for current branch
 /issue-track clear              # Clear the local cache
 ```
 
@@ -31,11 +35,16 @@ Synchronize GitHub issues to a local cache and display them as trackable tasks. 
   - `milestone`: Issues in specific milestone (requires second arg)
   - `project`: Issues in specific project board (requires second arg: title or number)
   - `all`: All open issues in repository
+  - `context`: Show issues filtered by combined context (project + scope + assignment)
+  - `scope`: Show issues matching the branch's detected scope label
+  - `branch`: Show only issues selected for the current branch
+  - `select`: Select issues for current branch (requires issue numbers as additional args)
   - `clear`: Clear the local cache
   - (empty): Show cached issues if fresh (< 15 min old), otherwise sync using default filter
 
-- **Second argument** (optional): Filter value for `labeled`, `milestone`, or `project`
+- **Second argument** (optional): Filter value for `labeled`, `milestone`, `project`, or `select`
   - For `project`: Can be project title (string) or project number (integer)
+  - For `select`: One or more issue numbers (e.g., `select 42 43 44`)
 
 **Input validation**: Only accepts predefined filters. Invalid inputs are rejected.
 
@@ -236,6 +245,26 @@ The cached issues enable automatic commit integration:
 /issue-track project 3
 ```
 
+**Show context-filtered issues** (project + scope + assignment):
+```bash
+/issue-track context
+```
+
+**Show issues matching branch scope**:
+```bash
+/issue-track scope
+```
+
+**Show only branch-selected issues**:
+```bash
+/issue-track branch
+```
+
+**Select issues for current branch**:
+```bash
+/issue-track select 42 43 44
+```
+
 **Force resync**:
 ```bash
 /issue-track sync
@@ -255,7 +284,7 @@ This information is used by `/commit-smart` to prioritize that issue.
 ## Error Handling
 
 If the filter is invalid:
-1. Display error: "Invalid filter: '{value}'. Must be one of: sync, assigned, labeled, milestone, project, all, clear"
+1. Display error: "Invalid filter: '{value}'. Must be one of: sync, assigned, labeled, milestone, project, all, context, scope, branch, select, clear"
 2. Show usage example
 3. Stop execution
 
