@@ -160,9 +160,17 @@ def generate_branch_name(branch_type: str, name: str, issue: Optional[int], conf
     prefixes = config.get("branches", {}).get("prefixes", {})
     prefix = prefixes.get(branch_type, f"{branch_type}/")
 
+    # Store original for error message
+    original_name = name
+
     # Clean the name
     name = name.lower().replace(" ", "-").replace("_", "-")
     name = re.sub(r"[^a-z0-9-]", "", name)
+    name = name.strip("-")  # Remove leading/trailing hyphens
+
+    # Validate name is not empty after cleaning
+    if not name:
+        raise ValueError(f"Branch name cannot be empty after cleaning: '{original_name}'")
 
     # Build branch name
     if issue:
@@ -520,11 +528,16 @@ def clean_branches(args):
         print("Dry run - no branches deleted")
         return
 
-    # Confirm deletion
-    response = input("Delete these branches? [y/N] ").strip().lower()
-    if response != "y":
-        print("Cancelled")
-        return
+    # Confirm deletion (skip if --yes flag or non-interactive)
+    if not args.yes:
+        if not sys.stdin.isatty():
+            print("Error: Cannot prompt for confirmation in non-interactive mode")
+            print("Use --yes flag to skip confirmation")
+            return
+        response = input("Delete these branches? [y/N] ").strip().lower()
+        if response != "y":
+            print("Cancelled")
+            return
 
     # Delete branches
     for b in to_delete:
@@ -582,7 +595,7 @@ def show_config(args):
     elif args.init:
         # Initialize with template
         strategy = args.init
-        templates_file = Path(__file__).parent.parent / "templates" / "branching-config-templates.json"
+        templates_file = Path(__file__).parent.parent / "assets" / "templates" / "branching-config-templates.json"
 
         if templates_file.exists():
             with open(templates_file) as f:
@@ -630,6 +643,7 @@ def main():
     # Clean command
     clean_parser = subparsers.add_parser("clean", help="Clean merged branches")
     clean_parser.add_argument("--dry-run", "-n", action="store_true", help="Show what would be deleted")
+    clean_parser.add_argument("--yes", "-y", action="store_true", help="Skip confirmation prompt")
 
     # Config command
     config_parser = subparsers.add_parser("config", help="View or update configuration")

@@ -260,10 +260,14 @@ def remove_worktree(args):
             if status.stdout.strip():
                 print()
                 print("Warning: Worktree has uncommitted changes!")
-                response = input("Continue anyway? [y/N] ").strip().lower()
-                if response != "y":
-                    print("Cancelled")
-                    return
+                if not args.yes:
+                    if not sys.stdin.isatty():
+                        print("Error: Cannot prompt in non-interactive mode. Use --yes to skip.")
+                        return
+                    response = input("Continue anyway? [y/N] ").strip().lower()
+                    if response != "y":
+                        print("Cancelled")
+                        return
         except subprocess.CalledProcessError:
             pass
 
@@ -285,10 +289,14 @@ def remove_worktree(args):
             # Check if branch is merged
             merged = run_git(["branch", "--merged", "main"], check=False)
             if branch in merged:
-                response = input(f"Delete merged branch '{branch}'? [y/N] ").strip().lower()
-                if response == "y":
+                if args.yes:
                     run_git(["branch", "-d", branch])
                     print(f"✅ Branch deleted: {branch}")
+                elif sys.stdin.isatty():
+                    response = input(f"Delete merged branch '{branch}'? [y/N] ").strip().lower()
+                    if response == "y":
+                        run_git(["branch", "-d", branch])
+                        print(f"✅ Branch deleted: {branch}")
         except subprocess.CalledProcessError:
             pass
 
@@ -329,10 +337,15 @@ def clean_worktrees(args):
         print("Dry run - no worktrees removed")
         return
 
-    response = input("Remove these worktrees? [y/N] ").strip().lower()
-    if response != "y":
-        print("Cancelled")
-        return
+    # Confirm removal (skip if --yes flag or non-interactive)
+    if not args.yes:
+        if not sys.stdin.isatty():
+            print("Error: Cannot prompt in non-interactive mode. Use --yes to skip.")
+            return
+        response = input("Remove these worktrees? [y/N] ").strip().lower()
+        if response != "y":
+            print("Cancelled")
+            return
 
     # Remove worktrees
     for wt in to_clean:
@@ -447,11 +460,15 @@ def main():
                              help="Force remove even with changes")
     remove_parser.add_argument("--keep-branch", "-k", action="store_true",
                              help="Keep the branch after removing worktree")
+    remove_parser.add_argument("--yes", "-y", action="store_true",
+                             help="Skip confirmation prompts")
 
     # Clean command
     clean_parser = subparsers.add_parser("clean", help="Clean merged worktrees")
     clean_parser.add_argument("--dry-run", "-n", action="store_true",
                             help="Show what would be removed")
+    clean_parser.add_argument("--yes", "-y", action="store_true",
+                            help="Skip confirmation prompt")
 
     # Status command
     subparsers.add_parser("status", help="Show worktree status")
