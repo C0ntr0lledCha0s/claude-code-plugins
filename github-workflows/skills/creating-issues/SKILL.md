@@ -202,9 +202,21 @@ Use structured templates for consistent, complete issues:
 - `Sprint <number>` - Sprints
 - `Q<n> <year>` - Quarters
 
-### 6. **Issue Relationships**
+### 6. **Issue Relationships (Parent-Child)**
 
-**Parent Issue**:
+**IMPORTANT**: Use the GraphQL API for true parent-child relationships, NOT task lists.
+
+**Task lists (`- [ ] #68`) create "tracked" relationships, NOT parent-child!**
+
+For proper parent-child (sub-issue) relationships, use the `managing-relationships` skill:
+
+```bash
+# After creating issues, establish parent-child relationships
+python github-workflows/skills/managing-relationships/scripts/manage-relationships.py \
+  add-sub-issue --parent 67 --child 68
+```
+
+**In Issue Body** (for documentation, not relationships):
 ```markdown
 ## Parent Issue
 
@@ -225,15 +237,70 @@ Part of #<number> - <Parent title>
 - #<number> - <Related title>
 ```
 
+**After Issue Creation**:
+1. Create all issues first
+2. Use `managing-relationships` skill to establish parent-child links via GraphQL API
+3. Verify relationships with `manage-relationships.py show-all --issue <parent>`
+
 ### 7. **Project Board Placement**
 
-New issues typically go to **Backlog** status in project board.
+**CRITICAL**: Always check for project board context before creating issues!
+
+**Step 1: Check for Environment Context**
+```bash
+# Check if env.json exists with project info
+cat .claude/github-workflows/env.json | grep -A3 "projectBoard"
+```
+
+If `env.json` exists and contains `projectBoard.number`, you MUST add issues to that project.
+
+**Step 2: Add to Project Board**
+```bash
+# Add issue to project board
+gh project item-add <PROJECT_NUMBER> --owner <OWNER> --url <ISSUE_URL>
+```
+
+**Step 3: Set Project Fields** (optional but recommended)
+- Status: Backlog (default) or Todo
+- Priority: Match the issue's priority label
+- Size: Estimate if known
 
 Move to **Todo** when:
 - Requirements are clear
 - Acceptance criteria defined
 - Priority assigned
 - Ready to be picked up
+
+### 8. **Clarifying Questions**
+
+**ALWAYS ask these questions before creating issues** (especially for multiple issues):
+
+**Required Clarifications**:
+1. **Project Board**: "Should these issues be added to a project board? I see project #X in env.json."
+2. **Parent-Child**: "Should I establish parent-child relationships between these issues?"
+3. **Milestone**: "Should these be assigned to a milestone?"
+
+**Context-Dependent Clarifications**:
+4. **Scope**: "Which component does this affect?" (if not detectable from branch)
+5. **Priority**: "What priority level?" (if not obvious from description)
+6. **Related Issues**: "Are there existing issues this relates to?"
+
+**Example Clarification Flow**:
+```markdown
+Before I create these issues, let me confirm:
+
+1. **Project Board**: I see project #3 "Agent Plugin Development" in env.json. Should I add these issues to it?
+2. **Relationships**: Should issue X be the parent of issues Y, Z?
+3. **Milestone**: Should these be part of "Agent Plugins v1.0"?
+
+This ensures all metadata is correct on first creation.
+```
+
+**Why This Matters**:
+- Corrections after creation waste time
+- Relationships require GraphQL API (more complex)
+- Missing project board assignment loses visibility
+- 5 minutes of questions saves 30 minutes of fixes
 
 ## Your Capabilities
 
@@ -400,12 +467,22 @@ Covers:
 **User trigger**: "Create an issue for X"
 
 **Your workflow**:
-1. Validate/suggest title (no prefixes, imperative mood)
-2. Recommend labels (type, priority, scope)
-3. Generate structured body (summary, acceptance criteria)
-4. Suggest milestone if applicable
-5. Identify relationships
+1. **Check context first**:
+   - Read `env.json` for project board and milestone info
+   - Check user's open IDE files for signals
+   - Identify scope from branch or project structure
+2. **Ask clarifying questions** (for multiple issues or complex requests):
+   - Project board assignment?
+   - Parent-child relationships?
+   - Milestone assignment?
+3. Validate/suggest title (no prefixes, imperative mood)
+4. Recommend labels (type, priority, scope)
+5. Generate structured body (summary, acceptance criteria)
 6. Provide complete `gh issue create` command
+7. **After creation**:
+   - Add to project board via `gh project item-add`
+   - Establish relationships via `manage-relationships.py`
+   - Verify all metadata is correct
 
 ### Pattern 2: Fix Issue Title
 
@@ -504,3 +581,128 @@ If scope cannot be auto-detected:
 - Require explicit confirmation if skipping (strongly discouraged)
 
 When you encounter issue creation, use this expertise to help users create well-formed issues that follow project conventions!
+
+## Common Mistakes
+
+### Mistake 1: Using Task Lists for Parent-Child Relationships
+
+```markdown
+❌ WRONG - Task lists create "tracked" relationships, not parent-child:
+## Child Issues
+- [ ] #68
+- [ ] #69
+
+✅ CORRECT - Use GraphQL API for true parent-child:
+python manage-relationships.py add-sub-issue --parent 67 --child 68
+```
+
+**Why it matters**: Task list checkboxes only create "tracked by" links. True parent-child relationships require the GraphQL `addSubIssue` mutation, which enables:
+- Progress tracking (X/Y completed)
+- Hierarchy navigation in GitHub UI
+- Sub-issue status aggregation
+
+### Mistake 2: Not Checking env.json for Project Context
+
+```markdown
+❌ WRONG - Creating issues without checking project context:
+gh issue create --title "Add feature" --label "feature"
+
+✅ CORRECT - Check env.json first, then add to project:
+# 1. Check context
+cat .claude/github-workflows/env.json | grep projectBoard
+
+# 2. Create issue
+gh issue create --title "Add feature" --label "feature"
+
+# 3. Add to project
+gh project item-add 3 --owner OWNER --url ISSUE_URL
+```
+
+**Why it matters**: Issues not added to project boards lose visibility and don't appear in sprint planning or roadmaps.
+
+### Mistake 3: Not Asking Clarifying Questions
+
+```markdown
+❌ WRONG - Jumping straight to issue creation:
+User: "Create issues for the new auth feature"
+Claude: *immediately creates 5 issues*
+
+✅ CORRECT - Ask clarifying questions first:
+User: "Create issues for the new auth feature"
+Claude: "Before I create these issues, let me confirm:
+1. Should I add them to project #3?
+2. Should the main feature issue be parent of the subtasks?
+3. Should they be assigned to the v1.0 milestone?"
+```
+
+**Why it matters**: 5 minutes of clarification saves 30 minutes of corrections. Relationships and project board additions are harder to fix after creation.
+
+### Mistake 4: Ignoring IDE Context Signals
+
+```markdown
+❌ WRONG - Ignoring that user has env.json open:
+<ide_opened_file>env.json</ide_opened_file>
+Claude: *doesn't read env.json*
+
+✅ CORRECT - Read files the user has open:
+<ide_opened_file>env.json</ide_opened_file>
+Claude: *reads env.json to get project board, milestone, etc.*
+```
+
+**Why it matters**: Files open in the user's IDE are intentional signals. They often contain critical context for the task.
+
+### Mistake 5: Creating Issues Without Verification
+
+```markdown
+❌ WRONG - Creating and moving on:
+gh issue create ...
+"Done! Created issue #67"
+
+✅ CORRECT - Verify after creation:
+gh issue create ...
+gh issue view 67 --json labels,projectItems
+python manage-relationships.py show-all --issue 67
+"Created #67, added to project #3, linked as child of #50"
+```
+
+**Why it matters**: External-facing work needs verification. It's easier to catch mistakes immediately than fix them later.
+
+### Mistake 6: Missing Required Labels
+
+```markdown
+❌ WRONG - Only type label:
+--label "feature"
+
+✅ CORRECT - All three required labels:
+--label "feature,priority:medium,scope:self-improvement"
+```
+
+**Why it matters**: Scope labels enable context-aware filtering in `/issue-track context` and automatic issue detection in `/commit-smart`.
+
+## Pre-Flight Checklist
+
+Before creating ANY issue, verify:
+
+### Context Gathering
+- [ ] Checked `env.json` for project board number
+- [ ] Checked `env.json` for milestone info
+- [ ] Checked user's open IDE files for signals
+- [ ] Identified scope from branch or project structure
+
+### Clarifying Questions (for complex requests)
+- [ ] Confirmed project board assignment
+- [ ] Confirmed parent-child relationships
+- [ ] Confirmed milestone assignment
+- [ ] Confirmed scope if not auto-detected
+
+### Issue Content
+- [ ] Title follows conventions (no prefix, imperative mood)
+- [ ] All three required labels (type, priority, scope)
+- [ ] Structured body with acceptance criteria
+- [ ] Parent reference in body if applicable
+
+### Post-Creation
+- [ ] Added to project board
+- [ ] Established parent-child relationships via GraphQL
+- [ ] Verified all metadata is correct
+- [ ] Reported results to user with links
