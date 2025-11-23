@@ -23,14 +23,16 @@ Set up the GitHub workflow environment for the current session. This command gat
 
 1. **Detect Repository**: Get owner/repo from git remote
 2. **Get User Info**: Current GitHub username
-3. **Determine Project Type**: Ask if personal or team project (affects issue filtering)
-4. **Select Project Board**: Let user choose from existing boards or create new one
-5. **Label Stocktake**: Check and report missing standard labels
-6. **Analyze Project Scopes**: Suggest scope labels based on project structure
-7. **Get Current Milestone**: Find active milestone/sprint
-8. **Sync Issues**: Fetch issues based on project type preference
-9. **Create Environment**: Save context to `.claude/github-workflows/env.json`
-10. **Show Summary**: Display workflow status and setup recommendations
+3. **Find Project Board**: Auto-detect most recent active project board
+4. **Get Current Milestone**: Find active milestone/sprint
+5. **Analyze Project Scopes**: Suggest scope labels based on project structure
+6. **Label Stocktake**: Check and report missing standard labels
+7. **Detect Branch**: Get current branch and detect related issues and scope
+8. **Sync Issues**: Fetch issues (defaults to all issues)
+9. **Set Preferences**: Configure defaults (project type, issue filter, default project)
+10. **Create Setup Status**: Track which setup steps are complete
+11. **Save Environment**: Save context to `.claude/github-workflows/env.json`
+12. **Show Summary**: Display workflow status, label stocktake, and setup recommendations
 
 ## Environment File
 
@@ -110,30 +112,20 @@ When this command is invoked:
    gh api repos/{owner}/{repo}/milestones --jq '.[0]'
    ```
 
-3. **Determine project type** (if not previously set):
-   - Check if `env.json` already has preferences set
-   - If not, ask: "Is this a personal project (you're the only contributor) or a team project?"
-   - **Personal project**: Set `defaultIssueFilter` to `"all"` (fetch all open issues)
-   - **Team project**: Set `defaultIssueFilter` to `"assigned"` (fetch only issues assigned to you)
-   - Store in `preferences` section of `env.json`
+3. **Find project board** (automated):
+   - Query user's project boards: `gh project list --owner @me --format json`
+   - Auto-select the most recent (first) project board
+   - If no user projects, try organization projects
+   - Store in `projectBoard` section of `env.json`
+   - Store project number in `preferences.defaultProject`
 
-4. **Select project board** (if not previously set):
-   - List available project boards from `gh project list`
-   - Display options:
-     ```
-     Found 3 project boards:
-     [1] Agent Plugin Development (29 items)
-     [2] Logseq AI Memory & Ontology (2 items)
-     [3] Other Project (10 items)
-     [0] None - don't use a project board
-     [N] Create a new project board
+4. **Set preferences** (automated defaults):
+   - **projectType**: Set to `"personal"` (single contributor default)
+   - **defaultIssueFilter**: Set to `"all"` (fetch all open issues)
+   - **defaultProject**: Set to detected project board number (or null)
 
-     Select project: _
-     ```
-   - If user selects a number: Store project number in `preferences.defaultProject`
-   - If user selects 0: Set `defaultProject` to null
-   - If user selects N: Create new project using `/github-workflows:project-create`
-   - Store selection in `preferences.defaultProject` for use with `/issue-track project`
+   These defaults can be manually adjusted in `env.json` if needed:
+   - For team projects: Set `projectType` to `"team"` and `defaultIssueFilter` to `"assigned"`
 
 5. **Label stocktake**:
    ```bash

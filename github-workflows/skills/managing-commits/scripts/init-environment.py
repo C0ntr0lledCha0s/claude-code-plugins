@@ -277,6 +277,44 @@ def get_suggested_scopes():
     return scopes
 
 
+def get_label_stocktake():
+    """Get existing labels and identify missing standard labels."""
+    # Standard labels we expect
+    standard_labels = {
+        # Type labels
+        "bug", "feature", "enhancement", "documentation", "refactor", "chore",
+        # Priority labels
+        "priority:critical", "priority:high", "priority:medium", "priority:low"
+    }
+
+    # Get existing labels
+    output = run_gh_command([
+        "label", "list",
+        "--json", "name",
+        "--limit", "100"
+    ])
+
+    existing_labels = set()
+    if output:
+        try:
+            data = json.loads(output)
+            existing_labels = {label.get("name", "") for label in data}
+        except json.JSONDecodeError:
+            pass
+
+    # Find missing labels
+    missing = sorted(list(standard_labels - existing_labels))
+
+    # Recommended labels (the type labels)
+    recommended = ["bug", "feature", "enhancement", "documentation", "refactor", "chore"]
+
+    return {
+        "existing": len(existing_labels),
+        "missing": missing,
+        "recommended": recommended
+    }
+
+
 def get_issue_cache_info():
     """Get information about the issue cache."""
     cache_path = Path(".claude/github-workflows") / "active-issues.json"
@@ -397,13 +435,23 @@ def initialize_environment(force=False):
     print("  Analyzing project scopes...", end=" ")
     suggested_scopes = get_suggested_scopes()
     if suggested_scopes:
-        env["labels"] = {
-            "suggestedScopes": suggested_scopes
-        }
         print(f"✓ {len(suggested_scopes)} scopes")
     else:
-        env["labels"] = {"suggestedScopes": []}
         print("- None detected")
+
+    # Get label stocktake
+    print("  Checking labels...", end=" ")
+    label_stocktake = get_label_stocktake()
+    env["labels"] = {
+        "existing": label_stocktake["existing"],
+        "missing": label_stocktake["missing"],
+        "recommended": label_stocktake["recommended"],
+        "suggestedScopes": suggested_scopes if suggested_scopes else []
+    }
+    if label_stocktake["missing"]:
+        print(f"✓ {label_stocktake['existing']} labels ({len(label_stocktake['missing'])} missing)")
+    else:
+        print(f"✓ {label_stocktake['existing']} labels (all standard present)")
 
     # Branch info
     print("  Detecting branch...", end=" ")
@@ -432,6 +480,20 @@ def initialize_environment(force=False):
             print("✓ Done")
     else:
         print("- Sync failed")
+
+    # Add preferences section
+    env["preferences"] = {
+        "projectType": "personal",  # Default to personal project
+        "defaultIssueFilter": "all",  # Default to all issues for personal projects
+        "defaultProject": project.get("number") if project else None
+    }
+
+    # Add setup section
+    env["setup"] = {
+        "labelsComplete": len(label_stocktake["missing"]) == 0,
+        "projectBoardExists": project is not None,
+        "milestonesExist": milestone is not None
+    }
 
     # Save environment
     env_path = get_env_path()
@@ -486,6 +548,44 @@ def show_summary(env):
 
     if env.get("issueCache"):
         print(f"Cached Issues: {env['issueCache']['count']}")
+
+    # Display label stocktake
+    if env.get("labels"):
+        labels = env["labels"]
+        print(f"\n📋 Label Stocktake:")
+        print(f"  Existing: {labels.get('existing', 0)} labels")
+        if labels.get("missing"):
+            print(f"  Missing: {len(labels['missing'])} standard labels")
+            for label in labels["missing"][:5]:
+                print(f"    - {label}")
+            if len(labels["missing"]) > 5:
+                print(f"    ... and {len(labels['missing']) - 5} more")
+
+    # Display preferences
+    if env.get("preferences"):
+        prefs = env["preferences"]
+        print(f"\n⚙️  Preferences:")
+        print(f"  Project Type: {prefs.get('projectType', 'personal')}")
+        print(f"  Default Issue Filter: {prefs.get('defaultIssueFilter', 'all')}")
+        if prefs.get("defaultProject"):
+            print(f"  Default Project: #{prefs['defaultProject']}")
+
+    # Display setup recommendations
+    if env.get("setup"):
+        setup = env["setup"]
+        print(f"\n🔧 Setup Recommendations:")
+        if setup.get("labelsComplete"):
+            print("  ✅ All standard labels present")
+        else:
+            print("  ⚠️  Missing labels - run /github-workflows:label-sync standard to create")
+        if setup.get("projectBoardExists"):
+            print("  ✅ Project board exists")
+        else:
+            print("  ⚠️  No project board - run /github-workflows:project-create to create")
+        if setup.get("milestonesExist"):
+            print("  ✅ Active milestone found")
+        else:
+            print("  ⚠️  No active milestone - run /github-workflows:milestone-create to create")
 
     print("\n💡 Tips:")
     print("  - Use /commit-smart to commit with auto issue refs")

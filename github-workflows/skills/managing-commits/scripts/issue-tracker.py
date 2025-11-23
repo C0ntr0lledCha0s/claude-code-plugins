@@ -99,7 +99,7 @@ def sync_issues(filter_type="assigned", filter_value=None):
             "created_at": issue.get("createdAt", ""),
             "updated_at": issue.get("updatedAt", ""),
             "url": issue.get("url", ""),
-            "body_preview": (issue.get("body", "") or "")[:200]
+            "body_preview": (issue.get("body", "") or "")[:500]
         })
 
     # Save to cache
@@ -150,10 +150,14 @@ def filter_by_scope(issues, scope_label):
     if not scope_label:
         return issues
 
+    # Extract scope name for exact matching
+    scope_name = scope_label.replace("scope:", "")
+
     return [
         issue for issue in issues
         if scope_label in issue.get("labels", []) or
-           scope_label.replace("scope:", "") in " ".join(issue.get("labels", [])).lower()
+           f"scope:{scope_name}" in issue.get("labels", []) or
+           scope_name in issue.get("labels", [])  # Exact match only, no substring
     ]
 
 
@@ -165,51 +169,104 @@ def filter_by_project(issues, project_number):
     # Get issues from project via GraphQL
     env = load_environment()
     if not env:
+        print("Warning: No environment loaded, skipping project filtering", file=sys.stderr)
         return issues
 
     owner = env.get("user", {}).get("login", "")
     if not owner:
+        print("Warning: No user login in environment, skipping project filtering", file=sys.stderr)
         return issues
 
-    try:
-        # Query project items
-        query = '''
-        query($owner: String!, $number: Int!) {
-            user(login: $owner) {
-                projectV2(number: $number) {
-                    items(first: 100) {
-                        nodes {
-                            content {
-                                ... on Issue {
-                                    number
+    # Also get repository owner for org projects
+    repo_owner = env.get("repository", {}).get("owner", "")
+
+    def try_query(query_owner, is_org=False):
+        """Try to query project items for user or org."""
+        if is_org:
+            query = '''
+            query($owner: String!, $number: Int!) {
+                organization(login: $owner) {
+                    projectV2(number: $number) {
+                        items(first: 100) {
+                            nodes {
+                                content {
+                                    ... on Issue {
+                                        number
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
-        '''
+            '''
+        else:
+            query = '''
+            query($owner: String!, $number: Int!) {
+                user(login: $owner) {
+                    projectV2(number: $number) {
+                        items(first: 100) {
+                            nodes {
+                                content {
+                                    ... on Issue {
+                                        number
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            '''
+
         result = subprocess.run(
             ["gh", "api", "graphql",
              "-f", f"query={query}",
-             "-f", f"owner={owner}",
+             "-f", f"owner={query_owner}",
              "-F", f"number={project_number}"],
             capture_output=True,
-            text=True,
-            check=True
+            text=True
         )
-        data = json.loads(result.stdout)
-        project_issues = set()
-        items = data.get("data", {}).get("user", {}).get("projectV2", {}).get("items", {}).get("nodes", [])
-        for item in items:
-            content = item.get("content", {})
-            if content and content.get("number"):
-                project_issues.add(content["number"])
 
-        return [issue for issue in issues if issue["number"] in project_issues]
-    except Exception:
+        if result.returncode != 0:
+            return None, result.stderr
+
+        data = json.loads(result.stdout)
+
+        # Check for errors in response
+        if data.get("errors"):
+            error_msg = data["errors"][0].get("message", "Unknown GraphQL error")
+            return None, error_msg
+
+        # Extract items based on query type
+        if is_org:
+            items = data.get("data", {}).get("organization", {}).get("projectV2", {}).get("items", {}).get("nodes", [])
+        else:
+            items = data.get("data", {}).get("user", {}).get("projectV2", {}).get("items", {}).get("nodes", [])
+
+        return items, None
+
+    # Try user project first
+    items, error = try_query(owner, is_org=False)
+
+    # If user query failed and we have a different repo owner, try org
+    if items is None and repo_owner and repo_owner != owner:
+        items, error = try_query(repo_owner, is_org=True)
+
+    # If still no items, log the error
+    if items is None:
+        print(f"Warning: Project filtering failed: {error}", file=sys.stderr)
+        print("Troubleshooting: Check that project #{} exists and you have access".format(project_number), file=sys.stderr)
         return issues
+
+    # Extract issue numbers
+    project_issues = set()
+    for item in items:
+        content = item.get("content", {})
+        if content and content.get("number"):
+            project_issues.add(content["number"])
+
+    return [issue for issue in issues if issue["number"] in project_issues]
 
 
 def filter_by_assignment(issues, user_login):
