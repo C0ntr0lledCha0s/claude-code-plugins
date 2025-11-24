@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/github-workflows/hooks/scripts/check-dependencies.sh"
+            "command": "${PLUGIN_DIR}/hooks/scripts/check-dependencies.sh"
           }
         ]
       },
@@ -13,7 +13,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/github-workflows/hooks/check-init.sh"
+            "command": "${PLUGIN_DIR}/hooks/check-init.sh"
           }
         ]
       }
