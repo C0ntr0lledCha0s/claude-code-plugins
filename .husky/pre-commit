@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# Run plugin validation
+echo "🔍 Running plugin validation..."
+bash validate-all.sh || {
+    echo "❌ Plugin validation failed. Please fix errors before committing."
+    exit 1
+}
+
+# Run security checks (same as CI)
+echo "🔍 Running security checks..."
+ERRORS=0
+
+# Check for hardcoded paths (should use ${PLUGIN_DIR})
+if grep -r "github-workflows/hooks" --include="hooks.json" . 2>/dev/null; then
+    echo "❌ Found hardcoded plugin paths in hooks (use \${PLUGIN_DIR} instead)"
+    ERRORS=$((ERRORS + 1))
+fi
+
+# Check for secrets in code
+if grep -riE "(password|secret|api[_-]?key|token)\s*=\s*['\"][^'\"]+['\"]" \
+    --include="*.sh" --include="*.py" --include="*.md" \
+    --exclude-dir=".git" --exclude-dir="node_modules" . 2>/dev/null; then
+    echo "⚠️  Warning: Potential secrets found in code"
+fi
+
+if [ $ERRORS -gt 0 ]; then
+    echo "❌ Security checks failed. Please fix errors before committing."
+    exit 1
+fi
+
+echo "✅ Pre-commit validation passed!"
