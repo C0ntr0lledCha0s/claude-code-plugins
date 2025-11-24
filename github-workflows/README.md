@@ -70,7 +70,12 @@ winget install --id GitHub.cli
 
 # Authenticate after installation
 gh auth login
+
+# Add project scope for GitHub Projects v2 features
+gh auth refresh -s read:project
 ```
+
+> **Note**: The `read:project` scope is required for GitHub Projects v2 operations (creating boards, syncing items, managing fields). Without it, project-related commands will fail with "INSUFFICIENT_SCOPES" errors.
 
 More info: https://github.com/cli/cli#installation
 
@@ -379,6 +384,13 @@ Solution: Check project exists with `gh project list --owner ORG`
 ```
 Error: GraphQL query failed
 Solution: Check syntax and field names
+```
+
+### Insufficient Scopes
+
+```
+Error: Your token has not been granted the required scopes (INSUFFICIENT_SCOPES)
+Solution: Run `gh auth refresh -s read:project` to add the required scope
 ```
 
 **Multiple solutions available:**
