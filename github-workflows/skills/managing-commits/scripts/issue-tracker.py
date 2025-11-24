@@ -40,6 +40,8 @@ def run_gh_command(args):
             ["gh"] + args,
             capture_output=True,
             text=True,
+            encoding='utf-8',
+            errors='replace',
             check=True
         )
         return json.loads(result.stdout) if result.stdout.strip() else []
@@ -57,6 +59,8 @@ def get_repo_info():
             ["gh", "repo", "view", "--json", "nameWithOwner"],
             capture_output=True,
             text=True,
+            encoding='utf-8',
+            errors='replace',
             check=True
         )
         data = json.loads(result.stdout)
@@ -225,7 +229,9 @@ def filter_by_project(issues, project_number):
              "-f", f"owner={query_owner}",
              "-F", f"number={project_number}"],
             capture_output=True,
-            text=True
+            text=True,
+            encoding='utf-8',
+            errors='replace'
         )
 
         if result.returncode != 0:
@@ -387,6 +393,8 @@ def get_current_branch():
             ["git", "rev-parse", "--abbrev-ref", "HEAD"],
             capture_output=True,
             text=True,
+            encoding='utf-8',
+            errors='replace',
             check=True
         )
         return result.stdout.strip()
@@ -432,6 +440,8 @@ def find_related_issues(files=None):
                 ["git", "diff", "--cached", "--name-only"],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='replace',
                 check=True
             )
             files = result.stdout.strip().split("\n") if result.stdout.strip() else []
