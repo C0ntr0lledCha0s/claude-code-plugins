@@ -5,13 +5,7 @@ description: >
   organizing documentation files, setting up documentation frameworks, creating documentation
   directories, managing doc site configurations, or establishing documentation standards for
   a project. Provides guidance on documentation architecture and tooling.
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Bash
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # Managing Documentation Skill

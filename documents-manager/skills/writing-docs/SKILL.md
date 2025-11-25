@@ -5,12 +5,7 @@ description: >
   generating docstrings, creating README files, writing API documentation, adding code comments,
   or producing any technical documentation. Provides language-specific templates and best practices
   for effective documentation writing.
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
+allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
 # Writing Documentation Skill

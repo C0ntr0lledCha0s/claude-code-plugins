@@ -5,10 +5,7 @@ description: >
   evaluating documentation health, checking documentation coverage, auditing existing docs,
   assessing documentation quality metrics, or analyzing how well code is documented.
   Provides frameworks for measuring documentation effectiveness.
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
+allowed-tools: Read, Glob, Grep
 ---
 
 # Analyzing Documentation Skill
