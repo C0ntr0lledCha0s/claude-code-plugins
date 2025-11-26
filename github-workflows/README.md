@@ -274,15 +274,15 @@ Before approving any PR:
 5. Includes quality report in review
 ```
 
-### With commit-helper Skill
+### Enhanced Commit Messages
 
-Enhanced commit messages:
+GitHub-aware commit generation:
 ```markdown
-Extends commit-helper with GitHub context:
-1. Gets conventional commit from commit-helper
-2. Adds "Closes #N" for linked issues
-3. Adds co-authors from PR collaborators
-4. Validates format and conventions
+The managing-commits skill provides:
+1. Conventional commit format generation
+2. Automatic "Closes #N" for linked issues
+3. Co-author detection from collaborators
+4. Format validation and conventions
 ```
 
 ## Commands Reference

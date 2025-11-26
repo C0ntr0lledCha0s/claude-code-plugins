@@ -1,6 +1,6 @@
 ---
 name: managing-commits
-description: Git commit quality and conventional commits expertise with automatic issue tracking integration. Auto-invokes when the user explicitly asks about commit message format, commit quality, conventional commits, commit history analysis, issue references in commits, or requests help writing commit messages. Integrates with existing commit-helper skill and issue cache.
+description: Git commit quality and conventional commits expertise with automatic issue tracking integration. Auto-invokes when the user explicitly asks about commit message format, commit quality, conventional commits, commit history analysis, issue references in commits, or requests help writing commit messages. Integrates with the issue cache for automatic issue references.
 version: 1.2.0
 allowed-tools: Bash, Read, Grep, Glob
 ---
@@ -168,22 +168,24 @@ git log -- path/to/file
 {baseDir}/scripts/commit-analyzer.py report
 ```
 
-### 5. **Integration with commit-helper**
+### 5. **Commit Message Generation Workflow**
 
-**Leverage existing commit-helper skill**:
-- Delegates basic commit message generation to commit-helper
+**Complete commit message workflow**:
+- Analyzes staged changes to determine commit type
+- Generates conventional commit format message
 - Adds GitHub-specific context (issues, PRs)
-- Enhances with conventional commit validation
+- Validates format compliance
 - Provides git history analysis
 
-**Enhanced workflow**:
+**Workflow steps**:
 ```markdown
-1. Get base commit message from commit-helper
-2. Add conventional commit format
-3. Add GitHub issue references ("Closes #N")
-4. Add co-authors if applicable
-5. Validate format
-6. Execute commit
+1. Analyze staged changes for commit type
+2. Generate base commit message
+3. Apply conventional commit format
+4. Add GitHub issue references ("Closes #N")
+5. Add co-authors if applicable
+6. Validate format
+7. Execute commit
 ```
 
 ### 6. **Issue-Aware Commits**
@@ -509,11 +511,8 @@ python {baseDir}/scripts/commit-analyzer.py find-fixups
 # Analyze commit sizes
 python {baseDir}/scripts/commit-analyzer.py analyze-size
 
-# Full quality report
+# Full quality report (includes suggestions)
 python {baseDir}/scripts/commit-analyzer.py report --branch feature/auth
-
-# Suggest improvements
-python {baseDir}/scripts/commit-analyzer.py suggest-fixes
 ```
 
 ### Conventional Commits Helper
@@ -586,15 +585,15 @@ Template patterns for common commit types with examples.
 
 ## Integration Points
 
-### With commit-helper Skill
+### With /commit-smart Command
 
-**Primary integration**: Enhances commit-helper with GitHub context
+**Primary integration**: This skill powers the /commit-smart command
 ```markdown
-1. commit-helper generates base commit message
-2. managing-commits adds conventional format
-3. managing-commits adds GitHub issue links
-4. managing-commits validates format
-5. managing-commits executes commit
+1. Analyzes staged changes and conversation context
+2. Generates conventional commit message
+3. Adds GitHub issue references from cache
+4. Validates format compliance
+5. Executes the commit
 ```
 
 ### With triaging-issues Skill
