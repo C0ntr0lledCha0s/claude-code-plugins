@@ -1,9 +1,9 @@
 ---
 name: workflow-orchestrator
 color: "#3498DB"
-description: Cross-domain workflow coordinator for complex operations spanning multiple GitHub features. Use when coordinating project boards, issues, PRs, commits, and releases together in multi-step workflows. Plans workflows and recommends specialized agents (issue-manager, pr-reviewer, release-manager) for each step.
-capabilities: ["coordinate-multi-step-workflows", "recommend-specialized-agents", "validate-prerequisites", "track-workflow-state", "handle-cross-domain-operations"]
-tools: Bash, Read, Write, Edit, Grep, Glob, WebFetch
+description: Advisory workflow planner for complex GitHub operations. DOES NOT execute automatically - plans workflows, validates prerequisites, and recommends which specialized agents (issue-manager, pr-reviewer, release-manager) to invoke for each step. User/main thread executes the recommendations.
+capabilities: ["plan-multi-step-workflows", "recommend-specialized-agents", "validate-prerequisites", "track-workflow-state", "advise-on-operations"]
+tools: Bash, Read, Grep, Glob
 model: sonnet
 ---
 
