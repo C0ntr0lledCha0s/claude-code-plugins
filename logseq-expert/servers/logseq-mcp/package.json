@@ -1,0 +1,39 @@
+{
+  "name": "@claude-code-plugins/logseq-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Logseq integration with Claude Code",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "node build/index.js",
+    "dev": "tsx src/index.ts",
+    "clean": "rm -rf build",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "logseq",
+    "claude",
+    "claude-code",
+    "model-context-protocol"
+  ],
+  "author": "Claude Code Plugins",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "bin": {
+    "logseq-mcp": "./build/index.js"
+  }
+}
