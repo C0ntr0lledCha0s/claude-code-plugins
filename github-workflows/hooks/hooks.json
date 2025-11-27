@@ -8,14 +8,6 @@
             "command": "${PLUGIN_DIR}/hooks/scripts/check-dependencies.sh"
           }
         ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${PLUGIN_DIR}/hooks/check-init.sh"
-          }
-        ]
       }
     ],
     "PreToolUse": [
@@ -62,7 +54,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "If this Bash command was 'gh issue create' and it succeeded, suggest running /github-workflows:issue-triage with the new issue number to properly classify, label, and check for duplicates. Extract the issue number from the command output."
+            "prompt": "If this Bash command was 'gh issue create' and it succeeded, suggest triaging the new issue. Extract the issue number from the command output and offer to: 1) Check for duplicate issues, 2) Classify type/priority/scope and apply labels, 3) Map relationships to other issues, 4) Add to the appropriate project board. The triaging-issues skill will auto-invoke when triage operations are discussed."
           }
         ]
       },
