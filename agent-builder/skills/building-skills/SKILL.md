@@ -73,7 +73,7 @@ description: Brief description of WHAT the skill does and WHEN Claude should use
 ```yaml
 ---
 version: 1.0.0                     # Semantic version
-allowed-tools: Read, Grep, Glob    # Tools the skill can use without asking permission
+allowed-tools: Read, Grep, Glob    # MUST be comma-separated string (NOT YAML list!)
 ---
 ```
 
@@ -179,10 +179,20 @@ At runtime, `{baseDir}` expands to the skill's directory path.
 
 ## Tool Selection with `allowed-tools`
 
-The `allowed-tools` field grants pre-approved permissions:
+The `allowed-tools` field grants pre-approved permissions.
+
+**CRITICAL: Use comma-separated format on a single line:**
 
 ```yaml
+# CORRECT - comma-separated string
 allowed-tools: Read, Grep, Glob, Bash
+
+# WRONG - YAML list format (will not work!)
+allowed-tools:
+  - Read
+  - Grep
+  - Glob
+  - Bash
 ```
 
 **Benefits:**
@@ -191,6 +201,7 @@ allowed-tools: Read, Grep, Glob, Bash
 - Appropriate for trusted operations
 
 **Best Practices:**
+- **Always use comma-separated format** (not YAML list)
 - Start minimal, add tools as needed
 - Only include necessary tools
 - Be cautious with Write, Edit, Bash
@@ -421,6 +432,7 @@ Before finalizing a skill, verify:
 - [ ] Name is gerund form, lowercase-hyphens, max 64 characters
 - [ ] Description clearly states WHEN to auto-invoke (max 1024 chars)
 - [ ] SKILL.md has valid YAML frontmatter
+- [ ] **allowed-tools uses comma-separated format** (NOT YAML list!)
 - [ ] Directory structure follows conventions
 - [ ] Resources use `{baseDir}` variable correctly
 - [ ] Scripts are executable and tested

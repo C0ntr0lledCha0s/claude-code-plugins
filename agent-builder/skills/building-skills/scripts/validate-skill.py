@@ -122,7 +122,20 @@ def validate_skill(skill_dir: str) -> tuple[bool, list[str]]:
             'TodoWrite', 'BashOutput', 'KillShell'
         ]
 
-        if isinstance(tools, str):
+        # Check if using wrong YAML list format instead of comma-separated string
+        if isinstance(tools, list):
+            errors.append("CRITICAL ERROR: 'allowed-tools' must be a comma-separated string, NOT a YAML list!")
+            errors.append("")
+            errors.append("   Current format (WRONG):")
+            errors.append("   allowed-tools:")
+            for tool in tools[:3]:
+                errors.append(f"     - {tool}")
+            if len(tools) > 3:
+                errors.append("     ...")
+            errors.append("")
+            errors.append(f"   Correct format: allowed-tools: {', '.join(tools)}")
+            errors.append("")
+        elif isinstance(tools, str):
             tool_list = [t.strip() for t in tools.split(',')]
             for tool in tool_list:
                 if tool not in valid_tools:
