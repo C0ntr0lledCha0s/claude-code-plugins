@@ -16,29 +16,35 @@ The GitHub Workflows plugin provides end-to-end automation for GitHub-based deve
 
 ## Architecture
 
-### Components
+### Components (v2.0.0)
 
-**Agents** (2):
-- `workflow-orchestrator` - Coordinates complex multi-step workflows
+**Agents** (4):
+- `workflow-orchestrator` - Coordinates complex multi-step workflows (advisory)
 - `pr-reviewer` - Comprehensive PR review with quality gates
+- `issue-manager` - Issue lifecycle management
+- `release-manager` - Release workflow automation
 
-**Skills** (5):
-- `managing-projects` - GitHub Projects v2 board management
-- `organizing-with-labels` - Label and milestone operations
+**Skills** (9 - auto-invoke based on context):
+- `creating-issues` - Issue creation and convention enforcement
+- `managing-branches` - Git branching strategy expertise
 - `managing-commits` - Git commit quality and conventions
-- `triaging-issues` - Issue management and triage
+- `managing-projects` - GitHub Projects v2 board management
+- `managing-relationships` - Issue parent/child and dependencies
+- `managing-worktrees` - Git worktree parallel development
+- `organizing-with-labels` - Label and milestone operations
 - `reviewing-pull-requests` - PR workflows and reviews
+- `triaging-issues` - Issue management and triage
 
-**Commands** (9):
-- `/project-create` - Create project boards
-- `/project-sync` - Sync issues to boards
-- `/label-sync` - Apply label taxonomy
-- `/milestone-create` - Create milestones
-- `/commit-review` - Review commit history
-- `/issue-triage` - Triage issues
-- `/pr-review-request` - Request comprehensive PR review
-- `/pr-quality-check` - Run quality gates
-- `/workflow-status` - View workflow state
+**Commands** (9 core - high-frequency user actions):
+- `/init` - Initialize session environment
+- `/workflow-status` - View current workflow state
+- `/commit-smart` - Intelligent commit with file grouping
+- `/branch-start` - Start any branch type (feature/hotfix/release)
+- `/branch-finish` - Complete branch with proper merging
+- `/pr-create` - Create pull request
+- `/issue-create` - Create well-formed issue
+- `/issue-track` - Sync issue cache for commit integration
+- `/release-prepare` - Prepare release with changelog
 
 ## Installation
 
@@ -158,27 +164,27 @@ ln -s /path/to/claude-code-plugin-automations/github-workflows/commands/* comman
 
 ## Quick Start
 
-### 1. Create a Project Board
+### 1. Initialize Session
 
 ```bash
-/project-create "Sprint 5" kanban
+/github-workflows:init
 ```
 
-Creates a kanban board with:
-- Columns: Todo, In Progress, Review, Done
-- Fields: Priority, Size, Assignee
-- Auto-add automation
+Sets up your session with:
+- Project context detection
+- Issue cache synchronization
+- Environment variables
 
-### 2. Apply Label Taxonomy
+### 2. Start Feature Branch
 
 ```bash
-/label-sync standard
+/github-workflows:branch-start feature auth --issue 42
 ```
 
-Creates standard labels:
-- Types: bug, feature, docs, refactor
-- Priorities: priority:high, priority:medium, priority:low
-- Scopes: scope:frontend, scope:backend, scope:docs
+Creates feature branch with:
+- Flow-aware base branch (develop for gitflow)
+- Issue linking
+- Naming convention enforcement
 
 ### 3. Smart Commit
 
@@ -188,17 +194,16 @@ Creates standard labels:
 
 Intelligently analyzes and commits changes with automatic file grouping and conventional commit formatting.
 
-### 4. Create PR with Quality Check
+### 4. Create PR
 
 ```bash
-/pr-review-request
+/github-workflows:pr-create
 ```
 
 Creates PR with:
 - Automatic issue linking
-- Self-improvement quality check
-- Quality gate validation
-- Approval decision
+- Auto-generated description
+- Label suggestions
 
 ## Usage Examples
 
@@ -287,67 +292,62 @@ The managing-commits skill provides:
 
 ## Commands Reference
 
-### Project Management
+### Session & Status
 
-**`/project-create [name] [template]`**
-- Creates project board with template
-- Templates: sprint, kanban, roadmap
-- Example: `/project-create "Q1 Planning" sprint`
-
-**`/project-sync [project-number]`**
-- Syncs issues and PRs to board
-- Updates field values based on labels
-- Example: `/project-sync 1`
-
-### Labels & Milestones
-
-**`/label-sync [preset]`**
-- Applies label taxonomy
-- Presets: standard, comprehensive, minimal
-- Example: `/label-sync standard`
-
-**`/milestone-create [title] [due-date]`**
-- Creates milestone with date
-- Example: `/milestone-create "v2.0" "2024-03-31"`
-
-### Commits
-
-**`/commit-smart [mode]`**
-- Intelligent commit workflow with file grouping
-- Modes: all, staged, context, scope, interactive
-- Analyzes changes and generates conventional commits
-
-**`/commit-review`**
-- Reviews commit history for issues
-- Validates conventions
-- Suggests improvements
-
-### Issues
-
-**`/issue-triage [issue-number]`**
-- Comprehensive issue triage
-- Duplicate detection
-- Relationship mapping
-- Auto-labeling
-
-### Pull Requests
-
-**`/pr-review-request [pr-number]`**
-- Full PR review with quality gates
-- Self-improvement integration
-- Approval decision
-
-**`/pr-quality-check [pr-number]`**
-- Runs quality gates without review
-- Reports quality scores
-- Recommends actions
-
-### Workflow
+**`/init`**
+- Initialize GitHub workflow environment
+- Sets up project context and issue cache
+- Configures session environment variables
 
 **`/workflow-status`**
 - Shows current workflow state
 - Branch, commits, PRs, board status
 - Next recommended actions
+
+### Branching
+
+**`/branch-start <type> <name> [--issue N]`**
+- Start branch following configured strategy
+- Types: feature, bugfix, hotfix, release, docs, refactor
+- Example: `/branch-start feature auth --issue 42`
+
+**`/branch-finish [branch-name]`**
+- Complete branch with proper merging
+- Handles hotfix dual-merge (main + develop)
+- Creates version tags for releases/hotfixes
+
+### Commits
+
+**`/commit-smart [mode]`**
+- Intelligent commit workflow with file grouping
+- Modes: all, staged, context, scope
+- Analyzes changes and generates conventional commits
+
+### Issues
+
+**`/issue-create [title]`**
+- Create well-formed issue with labels
+- Validates naming conventions
+- Adds to project board automatically
+
+**`/issue-track [filter]`**
+- Sync issue cache for commit integration
+- Filters: assigned, labeled, milestone, project, all
+- Enables automatic issue references in commits
+
+### Pull Requests
+
+**`/pr-create [--title TITLE] [--draft]`**
+- Create PR with proper formatting
+- Auto-generates description from commits
+- Links to related issues
+
+### Releases
+
+**`/release-prepare [version-type]`**
+- Prepare release with changelog
+- Types: major, minor, patch, auto
+- Analyzes commits since last release
 
 ## Configuration
 
@@ -453,17 +453,23 @@ Solution: Wait or check limits with `gh api rate_limit`
 ```
 github-workflows/
 ├── .claude-plugin/
-│   └── plugin.json              # Plugin manifest
-├── agents/
-│   ├── workflow-orchestrator.md # Main coordinator
-│   └── pr-reviewer.md           # PR review specialist
-├── skills/
-│   ├── managing-projects/       # Project boards
-│   ├── organizing-with-labels/  # Labels & milestones
+│   └── plugin.json              # Plugin manifest (v2.0.0)
+├── agents/                      # 4 agents
+│   ├── workflow-orchestrator.md # Multi-step coordinator
+│   ├── pr-reviewer.md           # PR review specialist
+│   ├── issue-manager.md         # Issue lifecycle
+│   └── release-manager.md       # Release workflows
+├── skills/                      # 9 auto-invoking skills
+│   ├── creating-issues/         # Issue creation
+│   ├── managing-branches/       # Branching strategies
 │   ├── managing-commits/        # Commit quality
-│   ├── triaging-issues/         # Issue management
-│   └── reviewing-pull-requests/ # PR workflows
-├── commands/                    # 9 user commands
+│   ├── managing-projects/       # Project boards
+│   ├── managing-relationships/  # Issue dependencies
+│   ├── managing-worktrees/      # Parallel development
+│   ├── organizing-with-labels/  # Labels & milestones
+│   ├── reviewing-pull-requests/ # PR workflows
+│   └── triaging-issues/         # Issue triage
+├── commands/                    # 9 core commands
 ├── hooks/                       # Automation hooks
 └── README.md                    # This file
 ```
@@ -505,19 +511,16 @@ MIT License - see LICENSE file
 
 ## Roadmap
 
-### Phase 1 (Current)
-- ✅ Plugin foundation
-- ✅ Core agents
-- ✅ Project boards skill
-- ⏳ All 5 skills (in progress)
-- ⏳ All 9 commands
-- ⏳ Hooks configuration
-- ⏳ Complete documentation
+### v2.0.0 (Current)
+- ✅ Streamlined to 9 core commands (from 31)
+- ✅ 9 auto-invoking skills
+- ✅ 4 specialized agents
+- ✅ Hooks configuration
+- ✅ Complete documentation
 
-### Phase 2 (Future)
+### Future Plans
 - Advanced automation rules
 - GitHub Actions integration
-- Release management
 - Team analytics
 - Custom field types
 - Webhook integrations

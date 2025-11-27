@@ -1,7 +1,7 @@
 {
   "name": "github-workflows",
-  "version": "1.7.0",
-  "description": "Comprehensive GitHub workflow automation including project boards, labels, milestones, commits, issues, pull requests, branching strategies, and worktrees. Features automatic issue tracking, commit integration, milestone management with progress tracking, branching flow automation (gitflow, GitHub Flow, trunk-based), worktree management for parallel development, and session environment setup. Optional integration with self-improvement plugin for enhanced PR reviews and quality gates.",
+  "version": "2.0.0",
+  "description": "Streamlined GitHub workflow automation with 9 core commands and 9 auto-invoking skills. Covers project boards, labels, milestones, commits, issues, pull requests, branching strategies, and worktrees. Features automatic issue tracking, commit integration, branching flow automation (gitflow, GitHub Flow, trunk-based), and session environment setup.",
   "author": {
     "name": "C0ntr0lledCha0s",
     "url": "https://github.com/C0ntr0lledCha0s/claude-code-plugin-automations"
@@ -48,8 +48,20 @@
     "./skills/managing-commits/",
     "./skills/managing-projects/",
     "./skills/managing-relationships/",
+    "./skills/managing-worktrees/",
     "./skills/organizing-with-labels/",
     "./skills/reviewing-pull-requests/",
     "./skills/triaging-issues/"
+  ],
+  "commands": [
+    "./commands/init.md",
+    "./commands/workflow-status.md",
+    "./commands/commit-smart.md",
+    "./commands/branch-start.md",
+    "./commands/branch-finish.md",
+    "./commands/pr-create.md",
+    "./commands/issue-create.md",
+    "./commands/issue-track.md",
+    "./commands/release-prepare.md"
   ]
 }
