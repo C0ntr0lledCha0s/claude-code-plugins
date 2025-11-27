@@ -11,7 +11,7 @@
     "pluginRoot": "./",
     "stats": {
       "totalPlugins": 7,
-      "lastUpdated": "2025-11-26"
+      "lastUpdated": "2025-11-27"
     }
   },
   "plugins": [
@@ -179,8 +179,8 @@
     {
       "name": "logseq-expert",
       "source": "./logseq-expert",
-      "description": "Expert plugin for Logseq's new database-based architecture. Provides deep knowledge of Datascript schema, built-in classes/properties, Datalog query building, plugin development, and MD-to-DB migration assistance.",
-      "version": "1.0.0",
+      "description": "Expert plugin for Logseq's database-based architecture with full CRUD capabilities. Provides Datascript schema knowledge, Datalog query building, HTTP API integration, MCP server, and comprehensive read/write operations for Logseq graphs.",
+      "version": "2.0.0",
       "category": "development-tools",
       "keywords": [
         "logseq",
@@ -192,7 +192,9 @@
         "schema",
         "migration",
         "plugin-development",
-        "clojure"
+        "http-api",
+        "mcp",
+        "crud"
       ],
       "author": {
         "name": "C0ntr0lledCha0s",
