@@ -135,6 +135,32 @@ my-plugin/
 - Use file arrays (`["file1.md", "file2.md"]`) to list specific files
 - Paths are relative to plugin root directory
 
+> **⚠️ CRITICAL FORMAT WARNING**
+>
+> **Arrays MUST contain simple path strings, NOT objects!**
+>
+> ❌ **WRONG** (will silently fail to load):
+> ```json
+> "commands": [
+>   {"name": "init", "path": "./commands/init.md", "description": "..."},
+>   {"name": "status", "path": "./commands/status.md"}
+> ]
+> ```
+>
+> ✅ **CORRECT**:
+> ```json
+> "commands": [
+>   "./commands/init.md",
+>   "./commands/status.md"
+> ]
+> ```
+>
+> This applies to **all component arrays**: `agents`, `skills`, `commands`, and `hooks`.
+>
+> **Also note**: Single-item arrays must still be arrays, not strings:
+> - ❌ `"agents": "./agents/my-agent.md"` (string - won't load)
+> - ✅ `"agents": ["./agents/my-agent.md"]` (array - correct)
+
 #### Optional: MCP Servers
 
 ```json

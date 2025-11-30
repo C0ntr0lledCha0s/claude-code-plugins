@@ -120,28 +120,26 @@ def validate_plugin(plugin_dir: str) -> Tuple[bool, List[str], List[str]]:
     if 'agents' in plugin_data:
         agents = plugin_data['agents']
         if isinstance(agents, str):
-            # Directory path
-            agents_dir = plugin_path / agents.lstrip('./')
-            if not agents_dir.exists():
-                errors.append(f"Agents directory does not exist: {agents}")
-            elif agents_dir.is_dir():
-                agent_files = list(agents_dir.glob("*.md"))
-                component_count += len(agent_files)
-                if len(agent_files) == 0:
-                    warnings.append(f"Agents directory exists but contains no .md files: {agents}")
+            # Single string path - this is WRONG for agents, must be array
+            errors.append(f"Field 'agents' must be an array of paths, not a string. Use: [\"./agents/agent.md\"] instead of \"./agents/agent.md\"")
         elif isinstance(agents, list):
-            # Array of file paths
-            for agent_file in agents:
-                agent_path = plugin_path / agent_file.lstrip('./')
-                if not agent_path.exists():
-                    errors.append(f"Agent file does not exist: {agent_file}")
+            # Array of file paths - check for object format (common mistake)
+            for i, agent_item in enumerate(agents):
+                if isinstance(agent_item, dict):
+                    errors.append(f"Field 'agents[{i}]' is an object but must be a string path. Use \"./agents/file.md\" instead of {{\"name\": ..., \"path\": ...}}")
+                elif isinstance(agent_item, str):
+                    agent_path = plugin_path / agent_item.lstrip('./')
+                    if not agent_path.exists():
+                        errors.append(f"Agent file does not exist: {agent_item}")
+                    else:
+                        component_count += 1
                 else:
-                    component_count += 1
+                    errors.append(f"Field 'agents[{i}]' must be a string path, got {type(agent_item).__name__}")
 
     if 'skills' in plugin_data:
         skills = plugin_data['skills']
         if isinstance(skills, str):
-            # Directory path
+            # Directory path - allowed for skills
             skills_dir = plugin_path / skills.lstrip('./')
             if not skills_dir.exists():
                 errors.append(f"Skills directory does not exist: {skills}")
@@ -156,21 +154,26 @@ def validate_plugin(plugin_dir: str) -> Tuple[bool, List[str], List[str]]:
                     if not skill_md.exists():
                         errors.append(f"Skill directory missing SKILL.md: {skill_dir.name}")
         elif isinstance(skills, list):
-            # Array of directory paths
-            for skill_dir_path in skills:
-                skill_path = plugin_path / skill_dir_path.lstrip('./')
-                if not skill_path.exists():
-                    errors.append(f"Skill directory does not exist: {skill_dir_path}")
+            # Array of directory paths - check for object format (common mistake)
+            for i, skill_item in enumerate(skills):
+                if isinstance(skill_item, dict):
+                    errors.append(f"Field 'skills[{i}]' is an object but must be a string path. Use \"./skills/skill-name\" instead of {{\"name\": ..., \"path\": ...}}")
+                elif isinstance(skill_item, str):
+                    skill_path = plugin_path / skill_item.lstrip('./')
+                    if not skill_path.exists():
+                        errors.append(f"Skill directory does not exist: {skill_item}")
+                    else:
+                        component_count += 1
+                        skill_md = skill_path / "SKILL.md"
+                        if not skill_md.exists():
+                            errors.append(f"Skill directory missing SKILL.md: {skill_item}")
                 else:
-                    component_count += 1
-                    skill_md = skill_path / "SKILL.md"
-                    if not skill_md.exists():
-                        errors.append(f"Skill directory missing SKILL.md: {skill_dir_path}")
+                    errors.append(f"Field 'skills[{i}]' must be a string path, got {type(skill_item).__name__}")
 
     if 'commands' in plugin_data:
         commands = plugin_data['commands']
         if isinstance(commands, str):
-            # Directory path
+            # Directory path - allowed for commands
             commands_dir = plugin_path / commands.lstrip('./')
             if not commands_dir.exists():
                 errors.append(f"Commands directory does not exist: {commands}")
@@ -181,35 +184,63 @@ def validate_plugin(plugin_dir: str) -> Tuple[bool, List[str], List[str]]:
                 if len(command_files) == 0:
                     warnings.append(f"Commands directory exists but contains no .md files: {commands}")
         elif isinstance(commands, list):
-            # Array of file paths
-            for command_file in commands:
-                command_path = plugin_path / command_file.lstrip('./')
-                if not command_path.exists():
-                    errors.append(f"Command file does not exist: {command_file}")
+            # Array of file paths - check for object format (common mistake)
+            for i, command_item in enumerate(commands):
+                if isinstance(command_item, dict):
+                    errors.append(f"Field 'commands[{i}]' is an object but must be a string path. Use \"./commands/cmd.md\" instead of {{\"name\": ..., \"path\": ...}}")
+                elif isinstance(command_item, str):
+                    command_path = plugin_path / command_item.lstrip('./')
+                    if not command_path.exists():
+                        errors.append(f"Command file does not exist: {command_item}")
+                    else:
+                        component_count += 1
                 else:
-                    component_count += 1
+                    errors.append(f"Field 'commands[{i}]' must be a string path, got {type(command_item).__name__}")
 
     if 'hooks' in plugin_data:
         hooks = plugin_data['hooks']
-        if isinstance(hooks, list):
-            for hook_file in hooks:
-                hook_path = plugin_path / hook_file.lstrip('./')
-                if not hook_path.exists():
-                    errors.append(f"Hooks file does not exist: {hook_file}")
+        if isinstance(hooks, str):
+            # Single string path - also allowed for hooks (single hooks.json)
+            hook_path = plugin_path / hooks.lstrip('./')
+            if not hook_path.exists():
+                errors.append(f"Hooks file does not exist: {hooks}")
+            else:
+                component_count += 1
+                # Validate hooks.json
+                if hooks.endswith('.json'):
+                    try:
+                        with open(hook_path, 'r') as f:
+                            hook_data = json.load(f)
+                        # Basic hooks.json structure validation
+                        if 'matchers' not in hook_data and 'hooks' not in hook_data:
+                            warnings.append(f"Hooks file missing 'matchers' or 'hooks' field: {hooks}")
+                    except json.JSONDecodeError as e:
+                        errors.append(f"Invalid JSON in hooks file {hooks}: {e}")
+        elif isinstance(hooks, list):
+            # Array of file paths - check for object format (common mistake)
+            for i, hook_item in enumerate(hooks):
+                if isinstance(hook_item, dict):
+                    errors.append(f"Field 'hooks[{i}]' is an object but must be a string path. Use \"./hooks/hooks.json\" instead of {{\"name\": ..., \"path\": ...}}")
+                elif isinstance(hook_item, str):
+                    hook_path = plugin_path / hook_item.lstrip('./')
+                    if not hook_path.exists():
+                        errors.append(f"Hooks file does not exist: {hook_item}")
+                    else:
+                        component_count += 1
+                        # Validate hooks.json
+                        if hook_item.endswith('.json'):
+                            try:
+                                with open(hook_path, 'r') as f:
+                                    hook_data = json.load(f)
+                                # Basic hooks.json structure validation
+                                if 'matchers' not in hook_data and 'hooks' not in hook_data:
+                                    warnings.append(f"Hooks file missing 'matchers' or 'hooks' field: {hook_item}")
+                            except json.JSONDecodeError as e:
+                                errors.append(f"Invalid JSON in hooks file {hook_item}: {e}")
                 else:
-                    component_count += 1
-                    # Validate hooks.json
-                    if hook_file.endswith('.json'):
-                        try:
-                            with open(hook_path, 'r') as f:
-                                hook_data = json.load(f)
-                            # Basic hooks.json structure validation
-                            if 'matchers' not in hook_data and 'hooks' not in hook_data:
-                                warnings.append(f"Hooks file missing 'matchers' or 'hooks' field: {hook_file}")
-                        except json.JSONDecodeError as e:
-                            errors.append(f"Invalid JSON in hooks file {hook_file}: {e}")
+                    errors.append(f"Field 'hooks[{i}]' must be a string path, got {type(hook_item).__name__}")
         else:
-            errors.append("Field 'hooks' must be an array of file paths")
+            errors.append("Field 'hooks' must be a string path or array of paths")
 
     if component_count == 0:
         warnings.append("Plugin contains no components (agents, skills, commands, or hooks)")
