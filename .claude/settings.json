@@ -17,7 +17,8 @@
     "github-workflows@claude-code-plugin-automations": true,
     "research-agent@claude-code-plugin-automations": true,
     "testing-expert@claude-code-plugin-automations": true,
-    "project-manager@claude-code-plugin-automations": true
+    "project-manager@claude-code-plugin-automations": true,
+    "logseq-expert@claude-code-plugin-automations": true
   },
   "extraKnownMarketplaces": {
     "claude-code-plugin-automations": {

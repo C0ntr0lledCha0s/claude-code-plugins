@@ -80,6 +80,7 @@ Desktop.ini
 .claude-hooks.json
 .claude/logs/
 *.log
+.mcp.json
 # Claude is creating this file in error
 nul 
 
